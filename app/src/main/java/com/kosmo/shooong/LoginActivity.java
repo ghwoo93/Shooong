@@ -63,7 +63,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             new LoginAsyncTask().execute(
-                    "http://192.168.0.20:8080/rest/member/json",
+                    "http://192.168.0.15:8080/rest/member/json",
                     id.getText().toString(),
                     pwd.getText().toString());
         }

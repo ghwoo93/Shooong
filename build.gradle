@@ -6,9 +6,6 @@ buildscript {
         google()
         mavenCentral()
         jcenter()
-        maven {
-            url 'https://mapbox.bintray.com/mapbox'
-        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.1'
@@ -27,6 +24,16 @@ allprojects {
         //지도를 위한 코드
         maven {
             url 'https://mapbox.bintray.com/mapbox'
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                // Do not change the username below.
+                // This should always be `mapbox` (not your username).
+                username = 'mapbox'
+                // Use the secret token you stored in gradle.properties as the password
+                password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
+            }
         }
     }
 }

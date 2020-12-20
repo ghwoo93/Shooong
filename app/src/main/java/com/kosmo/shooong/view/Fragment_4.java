@@ -101,9 +101,10 @@ public class Fragment_4 extends Fragment implements
     public View onCreateView(
             @NonNull LayoutInflater inflater, @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         mainActivity = new MainActivity();
-        View view = inflater.inflate(R.layout.tablayout_4,null,false);
-        Mapbox.getInstance(getContext(), getString(R.string.access_token));
+        final View view = inflater.inflate(R.layout.tablayout_4,null,false);
+        Mapbox.getInstance(getContext(), "pk.eyJ1Ijoid2t1bmdoOTMiLCJhIjoiY2tpd2tpZnRuMW9nZTJ3c2NkYjd1ZzdwNiJ9.ayMvzvtYn5DYJPgC43kpyQ");
         mapView = view.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
