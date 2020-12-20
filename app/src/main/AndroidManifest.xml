@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.kosmo.shooong">
+    <!--인터넷 권한-서버연동-->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!--찰영 이미지 갤러리에 저장하기위한 권한-사용자 동의 필요-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- 맵을 사용하기 위한  -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!--파이버전 android:usesCleartextTraffic="true" 추가-->
+    <application
+        android:usesCleartextTraffic="true"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <!--소프트 키패드용:android:windowSoftInputMode="adjustPan|adjustResize"-->
+        <activity android:name="com.kosmo.shooong.MainActivity" android:label="컨텐츠 화면"/>
+
+        <activity android:name="com.kosmo.shooong.IntroActivity"
+                  android:label="인트로 화면"
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+        <!--자바코드가 아닌 xml속성으로
+            Intent.FLAG_ACTIVITY_NO_HISTORY설정-->
+        <!--스프트 키패드용:android:windowSoftInputMode="adjustPan"-->
+        <activity
+            android:windowSoftInputMode="adjustPan"
+            android:name="com.kosmo.shooong.LoginActivity"
+            android:label="로그인 화면"
+            android:noHistory="true"/>
+    </application>
+
+</manifest>

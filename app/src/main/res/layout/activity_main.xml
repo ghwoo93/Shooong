@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    현재 파일 우측 상단의 Design탭에서
+    search메뉴->TabLayout으로 검색->다운
+    build.gradle(app레벨)에 라이브라리 자동추가 됨
+
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <!-- 탭메뉴 구성용
+             activity_layout.xml 디자인 탭에서 TabLayout검색후
+             다운
+             app:tabGravitiy : 탭의 정렬 방식(fill-탭의 너비를 동일한 간격으로 설정.center-가운데 정렬)
+             app:tabMode : 탭의 표시 방식(fixed-모든 탭이 나오도록 설정,scrollable : 탭이 화면 밖을 나갈 경우 스크롤이 되도록 설정)
+             app:tabSelectedTextColor : 탭이 선택됐을 때 글자 색 설정.
+             app:tabIndicatorColor : 탭이 선택됐을 때 인디케이터의 색 설정.
+             app:tabIndicatorHeight : 탭 하단의 인디케이터 높이를 설정
+        -->
+        <com.google.android.material.tabs.TabLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:tabGravity="fill"
+            app:tabMode="fixed"
+
+            app:tabBackground="@color/colorPrimary"
+            app:tabSelectedTextColor="#ff0000"
+            app:tabIndicatorColor="#ff0000"
+            android:id="@+id/tabLayout"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="8">
+        <!-- 프래그먼트 전환용-->
+        <androidx.viewpager.widget.ViewPager
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/viewPager"
+            />
+
+    </LinearLayout>
+
+
+</LinearLayout>
