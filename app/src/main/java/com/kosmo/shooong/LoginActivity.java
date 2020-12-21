@@ -124,7 +124,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     JSONObject json = new JSONObject(result);
                     String name = json.getString("name");
-                    Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                    Intent intent = new Intent(LoginActivity.this,LocationComponentBasicPulsingActivity.class);
                     intent.putExtra("name",name);
                     startActivity(intent);
                     //finish()불필요-NO_HISTORY로 설정했기때문에(매니페스트에서)

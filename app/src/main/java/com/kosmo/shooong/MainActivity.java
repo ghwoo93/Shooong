@@ -10,12 +10,14 @@ import androidx.viewpager.widget.ViewPager;
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -55,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
+
+    private Button mapButton;
     //허용이 안된 권한들을 저장할 컬렉션
     final List<String> denyPermissions = new Vector<String>();
     @Override
@@ -69,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         //위젯 얻기
         tabLayout = findViewById(R.id.tabLayout);
         viewPager = findViewById(R.id.viewPager);
+        mapButton = findViewById(R.id.btnAppChange);
         //탭메뉴 구성
         //방법1-setText() 및 setIcon()메소드 사용
         tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_app_info).setText("PICASSO"));

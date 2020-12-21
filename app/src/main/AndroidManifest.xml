@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <!-- 맵을 사용하기 위한  -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+    <uses-permission android:name="android.permission.FITNESS_BODY_READ" />
 
     <!--파이버전 android:usesCleartextTraffic="true" 추가-->
     <application
@@ -20,9 +22,9 @@
         android:theme="@style/AppTheme">
 
         <!--소프트 키패드용:android:windowSoftInputMode="adjustPan|adjustResize"-->
-        <activity android:name="com.kosmo.shooong.MainActivity" android:label="컨텐츠 화면"/>
+        <activity android:name=".MainActivity" android:label="컨텐츠 화면"/>
 
-        <activity android:name="com.kosmo.shooong.IntroActivity"
+        <activity android:name=".IntroActivity"
                   android:label="인트로 화면"
             >
             <intent-filter>
@@ -36,9 +38,11 @@
         <!--스프트 키패드용:android:windowSoftInputMode="adjustPan"-->
         <activity
             android:windowSoftInputMode="adjustPan"
-            android:name="com.kosmo.shooong.LoginActivity"
+            android:name=".LoginActivity"
             android:label="로그인 화면"
             android:noHistory="true"/>
+        <activity android:name=".MapActivity" android:label="맵 액티비티"/>
+        <activity android:name=".LocationComponentBasicPulsingActivity" android:label="맵 액티비티"/>
     </application>
 
 </manifest>

@@ -23,7 +23,7 @@ public class MyPagerAdapter extends FragmentStatePagerAdapter {
         switch(position){
             case 0:return new Fragment_1();
             case 1:return new Fragment_2();
-            case 2:return new Fragment_3();
+            //case 2:return new Fragment_3();
             default:return new Fragment_4();
         }
 

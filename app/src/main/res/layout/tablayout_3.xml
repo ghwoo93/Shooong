@@ -1,38 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="15dp"
+    android:orientation="vertical"
     >
+
+
+    <org.eazegraph.lib.charts.BarChart
+        android:id="@+id/tab1_chart_2"
+        android:layout_width="match_parent"
+        android:layout_height="200sp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="10dp"
+        android:padding="10dp"
+        app:egBarWidth="20dp"
+        app:egEnableScroll="true"
+        app:egFixedBarWidth="true"
+        app:egLegendHeight="40dp"
+        app:egShowDecimal="true" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/capturezone">
+        <com.mapbox.mapboxsdk.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="250sp"
+            mapbox:mapbox_cameraZoom="16"
+            />
+        <TextView
+            android:layout_marginTop="170sp"
+            android:layout_gravity="right"
+            android:id="@+id/nowSpeed"
+            android:layout_width="130sp"
+            android:layout_height="75sp"
+            android:textSize="28sp"
+            android:background="#59DFDFFF"
+            android:text=" 속도 표시\n 이동 거리"/>
+    </FrameLayout>
+    <TextView
+        android:id="@+id/textviewstep"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="걸음 수가 이곳에 표시됩니다"
+        android:textSize="40sp"
+
+        />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        >
+        android:gravity="bottom"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:layout_weight ="1">
         <Button
-            android:layout_width="0dp"
+            android:id="@+id/button_line"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="카메라"
-            android:textSize="20sp"
-            android:gravity="center"
-            android:id="@+id/btnCamera"
-            />
+            android:text="측정 시작하기"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            ></Button>
         <Button
-            android:layout_width="0dp"
+            android:id="@+id/insta"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="갤러리"
-            android:textSize="20sp"
-            android:gravity="center"
-            android:id="@+id/btnGallery"
-            />
+            android:text="산책할 만한 공원 찾기"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            ></Button>
+
     </LinearLayout>
-    <ImageView
-        android:id="@+id/imageView"
-        android:scaleType="fitCenter"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+
 </LinearLayout>
