@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
         jcenter()
         maven {
-            url 'https://mapbox.bintray.com/mapbox'
+            url 'https://api.mapbox.com/downloads/v2/releases/maven'
             authentication {
                 basic(BasicAuthentication)
             }
@@ -36,7 +36,7 @@ allprojects {
         maven { url "https://maven.google.com" }
         //지도를 위한 코드
         maven {
-            url 'https://mapbox.bintray.com/mapbox'
+            url 'https://api.mapbox.com/downloads/v2/releases/maven'
             authentication {
                 basic(BasicAuthentication)
             }
