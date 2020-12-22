@@ -6,6 +6,8 @@ buildscript {
         google()
         mavenCentral()
         jcenter()
+        maven { url 'https://mapbox.bintray.com/mapbox' }
+        /*
         maven {
             url 'https://api.mapbox.com/downloads/v2/releases/maven'
             authentication {
@@ -19,6 +21,7 @@ buildscript {
                 password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
             }
         }
+         */
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.1'
@@ -34,6 +37,8 @@ allprojects {
         mavenCentral()
         jcenter()
         maven { url "https://maven.google.com" }
+        maven { url 'https://mapbox.bintray.com/mapbox' }
+        /*
         //지도를 위한 코드
         maven {
             url 'https://api.mapbox.com/downloads/v2/releases/maven'
@@ -48,6 +53,7 @@ allprojects {
                 password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
             }
         }
+         */
     }
 }
 

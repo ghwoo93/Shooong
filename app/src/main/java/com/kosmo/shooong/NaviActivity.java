@@ -30,7 +30,9 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
 
+
 // classes to calculate a route
+import com.mapbox.services.android.navigation.ui.v5.NavigationLauncher;
 import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
 import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
@@ -44,9 +46,8 @@ import android.util.Log;
 // classes needed to launch navigation UI
 import android.view.View;
 import android.widget.Button;
-import com.mapbox.services.android.navigation.ui.v5.NavigationLauncher;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, MapboxMap.OnMapClickListener, PermissionsListener {
+public class NaviActivity extends AppCompatActivity implements OnMapReadyCallback, MapboxMap.OnMapClickListener, PermissionsListener {
     // variables for adding location layer
     private MapView mapView;
     private MapboxMap mapboxMap;
@@ -81,7 +82,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 addDestinationIconSymbolLayer(style);
 
-                mapboxMap.addOnMapClickListener(MapActivity.this);
+                mapboxMap.addOnMapClickListener(NaviActivity.this);
                 button = findViewById(R.id.startButton);
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -92,7 +93,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 .shouldSimulateRoute(simulateRoute)
                                 .build();
                         // Call this method with Context from within an Activity
-                        NavigationLauncher.startNavigation(MapActivity.this, options);
+                        NavigationLauncher.startNavigation(NaviActivity.this, options);
                     }
                 });
             }

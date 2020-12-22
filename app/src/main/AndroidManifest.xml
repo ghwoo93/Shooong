@@ -41,7 +41,7 @@
             android:name=".LoginActivity"
             android:label="로그인 화면"
             android:noHistory="true"/>
-        <activity android:name=".MapActivity" android:label="맵 액티비티"/>
+        <activity android:name=".NaviActivity" android:label="맵 액티비티"/>
         <activity android:name=".LocationComponentBasicPulsingActivity" android:label="맵 액티비티"/>
     </application>
 
