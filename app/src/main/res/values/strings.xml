@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Shooong.</string>
-    <string name="mapbox_access_token" translatable="false">sk.eyJ1Ijoid2t1bmdoOTMiLCJhIjoiY2tpeTl5N25kMWNpajMwbnpjYnFqcnVpbSJ9.nVfsVi_B7bxwf3nppEaz9Q</string>
+    <string name="mapbox_access_token" translatable="false">pk.eyJ1IjoicGFya3N1YmluIiwiYSI6ImNrYmo1ajVibTBtMTAyd3FuNmdlMzV3bDEifQ.0NmT0b2DzAlTSDqAGu23nQ</string>
     <string name="user_location_permission_explanation">This app needs location permissions to show its functionality.</string>
     <string name="user_location_permission_not_granted">You didn\'t grant location permissions.</string>
 </resources>

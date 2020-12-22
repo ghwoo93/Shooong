@@ -63,7 +63,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             new LoginAsyncTask().execute(
-                    "http://192.168.0.15:8080/rest/member/json",
+                    "http://192.168.75.103:8080/rest/member/json",
                     id.getText().toString(),
                     pwd.getText().toString());
         }
@@ -121,10 +121,9 @@ public class LoginActivity extends AppCompatActivity {
             Log.i("com.kosmo.kosmoapp","result:"+result);
             if(result !=null && result.length()!=0) {//회원인 경우
                 try {
-
                     JSONObject json = new JSONObject(result);
                     String name = json.getString("name");
-                    Intent intent = new Intent(LoginActivity.this,LocationComponentBasicPulsingActivity.class);
+                    Intent intent = new Intent(LoginActivity.this,NaviActivity.class);
                     intent.putExtra("name",name);
                     startActivity(intent);
                     //finish()불필요-NO_HISTORY로 설정했기때문에(매니페스트에서)
@@ -134,8 +133,6 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString("id",json.getString("id"));
                     editor.putString("pwd",json.getString("pwd"));
                     editor.commit();
-
-
                 }
                 catch(Exception e){e.printStackTrace();}
 

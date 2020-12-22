@@ -66,7 +66,7 @@ public class NaviActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(getBaseContext(), getString(R.string.mapbox_access_token));
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_navi);
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
