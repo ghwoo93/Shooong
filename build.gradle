@@ -7,21 +7,6 @@ buildscript {
         mavenCentral()
         jcenter()
         maven { url 'https://mapbox.bintray.com/mapbox' }
-        /*
-        maven {
-            url 'https://api.mapbox.com/downloads/v2/releases/maven'
-            authentication {
-                basic(BasicAuthentication)
-            }
-            credentials {
-                // Do not change the username below.
-                // This should always be `mapbox` (not your username).
-                username = "mapbox"
-                // Use the secret token you stored in gradle.properties as the password
-                password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
-            }
-        }
-         */
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.1'
@@ -38,22 +23,6 @@ allprojects {
         jcenter()
         maven { url "https://maven.google.com" }
         maven { url 'https://mapbox.bintray.com/mapbox' }
-        /*
-        //지도를 위한 코드
-        maven {
-            url 'https://api.mapbox.com/downloads/v2/releases/maven'
-            authentication {
-                basic(BasicAuthentication)
-            }
-            credentials {
-                // Do not change the username below.
-                // This should always be `mapbox` (not your username).
-                username = "mapbox"
-                // Use the secret token you stored in gradle.properties as the password
-                password = project.properties['MAPBOX_DOWNLOADS_TOKEN'] ?: ""
-            }
-        }
-         */
     }
 }
 
