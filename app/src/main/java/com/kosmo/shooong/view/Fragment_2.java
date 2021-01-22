@@ -1,6 +1,7 @@
 package com.kosmo.shooong.view;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,6 +9,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -26,6 +28,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +50,8 @@ import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineResult;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
+import com.mapbox.geojson.GeoJson;
+import com.mapbox.geojson.gson.GeoJsonAdapterFactory;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
@@ -69,6 +74,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -98,6 +104,8 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     String walkdata = "", nowday = "";
     TextView tvStepCount, nowspeed;
     LocationChange loc = new LocationChange(this);
+    private String id;
+    private String pwd;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -284,7 +292,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         });
         //바차트 생성
         try {
-            setBarChart();
+            setGeoJson();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -317,10 +325,16 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
 
 
 
-    private void setBarChart() throws IOException {
+    private void setGeoJson() throws IOException {
         FileOutputStream outputStream;
-        String file = "/data/data/com.kosmo.kosmoapp/files/myfile.txt"; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
+        SharedPreferences preferences = getContext().getSharedPreferences("loginInfo", Activity.MODE_PRIVATE);
+        id=preferences.getString("id",null);//아이디 얻기
+        Log.i("com.kosmo.kosmoapp",id);
+        SimpleDateFormat nowdateFM = new SimpleDateFormat("yyyyMMdd");
+        nowday = nowdateFM.format(System.currentTimeMillis()); //현재 날짜 얻어오기
+        String file = "/data/data/com.kosmo.shooong/files/"+id+"_"+nowday+".txt"; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
         String filenamea = "myfile.txt";
+        //Json
         File txtfile = new File(file);
         if (!txtfile.exists()) { //파일 없으면 빈 파일 생성
             txtfile.createNewFile();
@@ -328,6 +342,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             outputStream.write("          ,0/          ,0/          ,0/          ,0/          ,0/          ,0/".getBytes()); //0으로 초기화된 5개의 바 차트
             outputStream.close();
         }
+        /*
         FileReader filereader = new FileReader(txtfile);
         int singleCh = 0;
         String walkdata = "";
@@ -335,8 +350,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             walkdata = walkdata + (char) singleCh;
         }
         filereader.close();
-        SimpleDateFormat nowdateFM = new SimpleDateFormat("yyyy-MM-dd"); //
-        nowday = nowdateFM.format(System.currentTimeMillis()); //현재 날짜 얻어오기
+
         String[] daywork = walkdata.split("/");   //날짜별 split로 구분 ex) 2020-07-15,1000 >>/<< 2020-07-14,2000/
         if (daywork[0].substring(0, 10).equals(nowday)) { // 현재 날짜와 구분하여 다르면 새 날짜 추가
             daywork[0] = nowday + "," + mSteps;
@@ -359,7 +373,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+         */
     }
 
     public static CharSequence getsteps() {
