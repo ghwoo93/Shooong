@@ -12,6 +12,7 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
 import com.kosmo.shooong.R;
 import com.kosmo.shooong.adapter.Fragment1Adapter;
 import com.kosmo.shooong.item.FragmentItem;
@@ -39,7 +40,7 @@ public class Fragment_1 extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        Log.i("com.kosmo.kosmoapp","onAttach:4");
+        Log.i("com.kosmo.kosmoapp","onAttach:1");
     }
 
     //2]onCreateView()오버 라이딩
@@ -57,7 +58,7 @@ public class Fragment_1 extends Fragment {
         //리스트뷰와 어댑터 연결]
         listView.setAdapter(adapter);
         //데이타는 스레드로 원격 서버에서 받아 온다
-        new ItemsAsyncTask().execute("http://192.168.0.20:8080/rest/photos");
+        new ItemsAsyncTask().execute("http://192.168.0.15:8080/rest/photos");
         return view;
     }/////////
     private class ItemsAsyncTask extends AsyncTask<String,Void,Void>{

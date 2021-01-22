@@ -11,8 +11,8 @@ public class MyPagerAdapter extends FragmentStatePagerAdapter {
 
     private int numbersOfFragment;
         //생성자]
-    public MyPagerAdapter(FragmentManager fm,int numbersOfFragment){
-        super(fm,FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+    public MyPagerAdapter(FragmentManager fm, int numbersOfFragment){
+        super(fm, FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         this.numbersOfFragment = numbersOfFragment;
     }////////////MyPagerAdapter
 
@@ -22,8 +22,8 @@ public class MyPagerAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         switch(position){
             case 0:return new Fragment_1();
-            case 1:return new Fragment_2();
-            //case 2:return new Fragment_3();
+            case 1:return new com.kosmo.shooong.view.Fragment_2();
+            case 2:return new com.kosmo.shooong.view.Fragment_3();
             default:return new Fragment_4();
         }
 

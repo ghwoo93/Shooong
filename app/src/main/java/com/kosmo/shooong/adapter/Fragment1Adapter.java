@@ -8,11 +8,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.kosmo.shooong.R;
 import com.kosmo.shooong.item.FragmentItem;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
-import com.kosmo.shooong.R;
 
 public class Fragment1Adapter extends BaseAdapter {
     //생성자를 통해서 초기화 할 멤버 변수들]

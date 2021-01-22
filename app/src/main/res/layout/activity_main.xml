@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="맵 뿅"
-        android:id="@+id/btnAppChange"
+        android:id="@+id/btnNavi"
         android:layout_marginBottom="10dp"
         />
     <LinearLayout

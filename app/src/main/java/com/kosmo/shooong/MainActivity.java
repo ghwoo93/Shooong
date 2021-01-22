@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private Button mapButton;
+
     //허용이 안된 권한들을 저장할 컬렉션
     final List<String> denyPermissions = new Vector<String>();
     @Override
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         //위젯 얻기
         tabLayout = findViewById(R.id.tabLayout);
         viewPager = findViewById(R.id.viewPager);
-        mapButton = findViewById(R.id.btnAppChange);
+        mapButton = findViewById(R.id.btnNavi);
         //탭메뉴 구성
         //방법1-setText() 및 setIcon()메소드 사용
         tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_app_info).setText("PICASSO"));
@@ -92,6 +93,14 @@ public class MainActivity extends AppCompatActivity {
         MyPagerAdapter myPagerAdapter = new MyPagerAdapter(getSupportFragmentManager(),tabLayout.getTabCount());
         //ViewPager와 MyPageAdapter를 연결
         viewPager.setAdapter(myPagerAdapter);
+
+        mapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this,NaviActivity.class);
+                startActivity(intent);
+            }
+        });
 
 
 

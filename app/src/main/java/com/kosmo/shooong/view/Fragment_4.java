@@ -1,289 +1,98 @@
 package com.kosmo.shooong.view;
 
-
+import android.app.Activity;
 import android.content.Context;
-import android.graphics.BitmapFactory;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
-// classes needed to initialize map
-import com.kosmo.shooong.MainActivity;
 import com.kosmo.shooong.R;
-import com.kosmo.shooong.adapter.Fragment4Adapter;
-import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
-import com.mapbox.mapboxsdk.location.modes.RenderMode;
-import com.mapbox.mapboxsdk.maps.MapView;
-import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.Style;
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
-// classes needed to add the location component
-import com.mapbox.android.core.permissions.PermissionsListener;
-import com.mapbox.android.core.permissions.PermissionsManager;
-import com.mapbox.mapboxsdk.location.LocationComponent;
-import com.mapbox.mapboxsdk.location.modes.CameraMode;
-
-// classes needed to add a marker
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.Point;
-import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.style.layers.Layer;
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField;
-
-// classes to calculate a route
-import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
-import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
-import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
-import com.mapbox.api.directions.v5.models.DirectionsResponse;
-import com.mapbox.api.directions.v5.models.DirectionsRoute;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import android.util.Log;
-
-// classes needed to launch navigation UI
-import android.view.View;
-import android.widget.Button;
-import com.mapbox.services.android.navigation.ui.v5.NavigationLauncher;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 
 //1]Fragement상속
 //※androidx.fragment.app.Fragment 상속
-public class Fragment_4 extends Fragment implements
-        OnMapReadyCallback, MapboxMap.OnMapClickListener, PermissionsListener {
-    private MapView mapView;
-    public MapboxMap mapboxMap;
-    public MainActivity mainActivity;
-
-    // variables for adding location layer
-    private PermissionsManager permissionsManager;
-    private LocationComponent locationComponent;
-    // variables for calculating and drawing a route
-    private DirectionsRoute currentRoute;
-    private static final String TAG = "DirectionsActivity";
-    private NavigationMapRoute navigationMapRoute;
-    // variables needed to initialize navigation
-    private Button button;
-
-    private Fragment4Adapter adapter;
-
+public class Fragment_4 extends Fragment {
+    //아이디 비번 저장용
+    private String id;
+    private String pwd;
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        Log.i("com.kosmo.shooong","onAttach:4");
+        Log.i("com.kosmo.kosmoapp","onAttach:4");
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences preferences = getContext().getSharedPreferences("loginInfo", Activity.MODE_PRIVATE);
+
+        id=preferences.getString("id",null);
+        pwd=preferences.getString("pwd",null);
+        Log.i("com.kosmo.kosmoapp",id+":"+pwd);
     }
 
+    //2]onCreateView()오버 라이딩
     @Nullable
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        mainActivity = new MainActivity();
-        final View view = inflater.inflate(R.layout.tablayout_4,null,false);
-        Mapbox.getInstance(getContext(), "pk.eyJ1Ijoid2t1bmdoOTMiLCJhIjoiY2tpd2tpZnRuMW9nZTJ3c2NkYjd1ZzdwNiJ9.ayMvzvtYn5DYJPgC43kpyQ");
-        mapView = view.findViewById(R.id.mapView);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.i("com.kosmo.kosmoapp","onCreateView:4");
+
+
+
+        //프래그먼트 레이아웃 전개
+        View view=inflater.inflate(R.layout.tablayout_4,null,false);
+        //웹뷰 얻기]
+        WebView webView = view.findViewById(R.id.webview);
+        //WebView설정]
+        //1]WebView의 getSettings()메소드로 WebSettings객체
+        WebSettings settings=webView.getSettings();
+        //자스가 실행되도록 설정- 기본적으로 웹뷰는 자스를 지원하지 않음]
+        settings.setJavaScriptEnabled(true);//필수 설정
+        // 아래부분 생략시 웹뷰가 전체 레이아웃을 차지함(사이트 로드시)]
+        webView.setWebViewClient(new WebViewClient());
+        //자스의 alert()모양을 Toast 로 변경
+        webView.setWebChromeClient(new CustomWebChromeClient());
+        //get요청
+        //webView.loadUrl("http://hwanyhee.iptime.org:8080/onememo/");
+        //post요청
+        try {
+            String params = "id=" + URLEncoder.encode(id, "UTF-8") + "&pwd=" + URLEncoder.encode(pwd, "UTF-8");
+            webView.postUrl("http://192.168.0.15:9090/springapp/OneMemo/Auth/LoginProcess.do", params.getBytes());
+        }
+        catch(UnsupportedEncodingException e){e.printStackTrace();}
+
         return view;
-    }
+    }/////////
 
-    @Override
-    public void onMapReady(@NonNull final MapboxMap mapboxMap) {
-        this.mapboxMap = mapboxMap;
-        mapboxMap.setStyle(getString(R.string.navigation_guidance_day), new Style.OnStyleLoaded() {
-            @Override
-            public void onStyleLoaded(@NonNull Style style) {
-                enableLocationComponent(style);
-                addDestinationIconSymbolLayer(style);
-
-                mapboxMap.addOnMapClickListener(Fragment_4.this);
-                button = mapView.findViewById(R.id.startButton);
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        boolean simulateRoute = true;
-                        NavigationLauncherOptions options = NavigationLauncherOptions.builder()
-                                .directionsRoute(currentRoute)
-                                .shouldSimulateRoute(simulateRoute)
-                                .build();
-                        // Call this method with Context from within an Activity
-                        NavigationLauncher.startNavigation(mainActivity, options);
-                    }
-                });
-            }
-        });
-    }
-
-    private void addDestinationIconSymbolLayer(@NonNull Style loadedMapStyle) {
-        loadedMapStyle.addImage("destination-icon-id",
-                BitmapFactory.decodeResource(this.getResources(), R.drawable.mapbox_marker_icon_default));
-        GeoJsonSource geoJsonSource = new GeoJsonSource("destination-source-id");
-        loadedMapStyle.addSource(geoJsonSource);
-        SymbolLayer destinationSymbolLayer = new SymbolLayer("destination-symbol-layer-id", "destination-source-id");
-        destinationSymbolLayer.withProperties(
-                iconImage("destination-icon-id"),
-                iconAllowOverlap(true),
-                iconIgnorePlacement(true)
-        );
-        loadedMapStyle.addLayer(destinationSymbolLayer);
-    }
-
-    @SuppressWarnings( {"MissingPermission"})
-    @Override
-    public boolean onMapClick(@NonNull LatLng point) {
-
-        Point destinationPoint = Point.fromLngLat(point.getLongitude(), point.getLatitude());
-        Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
-                locationComponent.getLastKnownLocation().getLatitude());
-
-        GeoJsonSource source = mapboxMap.getStyle().getSourceAs("destination-source-id");
-        if (source != null) {
-            source.setGeoJson(Feature.fromGeometry(destinationPoint));
-        }
-
-        getRoute(originPoint, destinationPoint);
-        button.setEnabled(true);
-        button.setBackgroundResource(R.color.mapboxBlue);
-        return true;
-    }
-
-    private void getRoute(Point origin, Point destination) {
-        NavigationRoute.builder(getContext())
-                .accessToken(Mapbox.getAccessToken())
-                .origin(origin)
-                .destination(destination)
-                .build()
-                .getRoute(new Callback<DirectionsResponse>() {
-                    @Override
-                    public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
-                        // You can get the generic HTTP info about the response
-                        Log.d(TAG, "Response code: " + response.code());
-                        if (response.body() == null) {
-                            Log.e(TAG, "No routes found, make sure you set the right user and access token.");
-                            return;
-                        } else if (response.body().routes().size() < 1) {
-                            Log.e(TAG, "No routes found");
-                            return;
-                        }
-
-                        currentRoute = response.body().routes().get(0);
-
-                        // Draw the route on the map
-                        if (navigationMapRoute != null) {
-                            navigationMapRoute.removeRoute();
-                        } else {
-                            navigationMapRoute = new NavigationMapRoute(null, mapView, mapboxMap, R.style.NavigationMapRoute);
-                        }
-                        navigationMapRoute.addRoute(currentRoute);
-                    }
-
-                    @Override
-                    public void onFailure(Call<DirectionsResponse> call, Throwable throwable) {
-                        Log.e(TAG, "Error: " + throwable.getMessage());
-                    }
-                });
-    }
-
-    @SuppressWarnings( {"MissingPermission"})
-    private void enableLocationComponent(@NonNull Style loadedMapStyle) {
-        // Check if permissions are enabled and if not request
-        if (PermissionsManager.areLocationPermissionsGranted(getContext())) {
-            // Activate the MapboxMap LocationComponent to show user location
-            // Adding in LocationComponentOptions is also an optional parameter
-            locationComponent = mapboxMap.getLocationComponent();
-            locationComponent.activateLocationComponent(getContext(), loadedMapStyle);
-            locationComponent.setLocationComponentEnabled(true);
-            // Set the component's camera mode
-            locationComponent.setCameraMode(CameraMode.TRACKING);
-        } else {
-            permissionsManager = new PermissionsManager(this);
-            permissionsManager.requestLocationPermissions(mainActivity);
+    private class CustomWebChromeClient extends WebChromeClient{
+        @Override
+        public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+            //경고 메시지를 Toast로 보여주기
+            Toast.makeText(view.getContext(),message,Toast.LENGTH_SHORT).show();
+            //자바스크립트 경고창의 확인버튼을 클릭한것으로 처리하도록 호출
+            //해야한다 alert()는 모달이라 클릭한 것으로 처리안하면
+            //다른 메뉴를 클릭 할 수 없다
+            result.confirm();
+            return true;
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
 
-    @Override
-    public void onExplanationNeeded(List<String> permissionsToExplain) {
-        Toast.makeText(getContext(), R.string.user_location_permission_explanation, Toast.LENGTH_LONG).show();
-    }
 
-    @Override
-    public void onPermissionResult(boolean granted) {
-        if (granted) {
-            enableLocationComponent(mapboxMap.getStyle());
-        } else {
-            Toast.makeText(getContext(), R.string.user_location_permission_not_granted, Toast.LENGTH_LONG).show();
-            mainActivity.finish();
-        }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        mapView.onStart();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        mapView.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        mapView.onPause();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        mapView.onStop();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mapView.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mapView.onDestroy();
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        mapView.onLowMemory();
-    }
 }
