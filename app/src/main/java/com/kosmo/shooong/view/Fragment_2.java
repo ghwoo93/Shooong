@@ -8,10 +8,8 @@ import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -28,7 +26,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,14 +41,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.kosmo.shooong.R;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineResult;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
-import com.mapbox.geojson.GeoJson;
-import com.mapbox.geojson.gson.GeoJsonAdapterFactory;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
@@ -67,14 +64,13 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.localization.LocalizationPlugin;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 
+
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -95,7 +91,9 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     private SensorManager sensorManager;
     private Sensor stepCountSensor;
     private int mCounterSteps = 0;
-    List<LatLng> polygonLatLngList;
+    JsonArray coordinates;
+    JsonArray coordinates_;
+    List<LatLng> lineLatLngList;
     Button button_line, gongyu;
     boolean locflag = false;
     double speed, deltime, X_, Y_;
@@ -153,7 +151,10 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                 });
             }
             private void initCoordinates() {
-                polygonLatLngList = new ArrayList<>();
+                lineLatLngList = new ArrayList<>();
+                coordinates = new JsonArray();
+                coordinates_ = new JsonArray();
+                coordinates.add(coordinates_);
             }
 
             @SuppressWarnings({"MissingPermission"})
@@ -198,6 +199,12 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     button_line.setText("측정 종료하기");
                 else{
                     button_line.setText("측정 시작하기");
+                    //지오제이슨 생성
+                    try {
+                        setGeoJson();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     ContentValues values = new ContentValues();
                     FrameLayout container = view.findViewById(R.id.mapView);
                     container.buildDrawingCache();
@@ -233,9 +240,9 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                         double latitude;
                         double longitude;
                         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
                             Toast.makeText(getContext(), "권한이 수락되지 않았습니다. 다시 시도해주세요", Toast.LENGTH_LONG).show();
-                            return; }
+                            return;
+                        }
                         Location loctemp =  mapboxMap.getLocationComponent().getLastKnownLocation();
                         latitude = loctemp.getLatitude();
                         longitude = loctemp.getLongitude();
@@ -258,7 +265,11 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                                 Log.i("com.kosmo.gps", "latlng " + latitude +" - "+longitude);
 
                                 speed = locToMeter*1.8; //2초에 한번씩 불러옴
-                                polygonLatLngList.add(new LatLng(latitude, longitude)); //선을 연결할 좌표를 추가해줌
+                                lineLatLngList.add(new LatLng(latitude, longitude)); //선을 연결할 좌표를 추가해줌
+                                JsonArray nowLatLng = new JsonArray();
+                                nowLatLng.add(longitude);
+                                nowLatLng.add(latitude);
+                                coordinates_.add(nowLatLng);
                                 mHandler.sendEmptyMessage(200); //지도에 선을 그어주는 함수 추가
                                 X_ = latitude;Y_=longitude;
                                 deltime =  System.currentTimeMillis();
@@ -273,6 +284,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
 
             }
         }); // end of setOnClickListener
+        /*
         gongyu = view.findViewById(R.id.insta);
         gongyu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -290,12 +302,8 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                 }
             }
         });
-        //바차트 생성
-        try {
-            setGeoJson();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        */
+
 
         return view;
     }/////////
@@ -307,7 +315,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     case 200:
                         Log.d("com.kosmo.gps", "선그리기요청");
                         mapboxMap.addPolyline(new PolylineOptions()
-                                .addAll(polygonLatLngList)
+                                .addAll(lineLatLngList)
                                 .color(Color.parseColor("#F67A42"))
                                 .width(3));
                         break;
@@ -316,7 +324,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             }else{
                 for(Polyline p : mapboxMap.getPolylines()){
                     mapboxMap.removePolyline(p);}
-                polygonLatLngList = new ArrayList<>();
+                lineLatLngList = new ArrayList<>();
 
             }
         }
@@ -327,19 +335,33 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
 
     private void setGeoJson() throws IOException {
         FileOutputStream outputStream;
+        JsonObject geoJson;
+        JsonObject properties;
+        JsonObject geometry;
+        //JsonArray coordinates;
         SharedPreferences preferences = getContext().getSharedPreferences("loginInfo", Activity.MODE_PRIVATE);
         id=preferences.getString("id",null);//아이디 얻기
         Log.i("com.kosmo.kosmoapp",id);
-        SimpleDateFormat nowdateFM = new SimpleDateFormat("yyyyMMdd");
-        nowday = nowdateFM.format(System.currentTimeMillis()); //현재 날짜 얻어오기
-        String file = "/data/data/com.kosmo.shooong/files/"+id+"_"+nowday+".txt"; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
-        String filenamea = "myfile.txt";
-        //Json
-        File txtfile = new File(file);
-        if (!txtfile.exists()) { //파일 없으면 빈 파일 생성
-            txtfile.createNewFile();
-            outputStream = getContext().openFileOutput(filenamea, Context.MODE_PRIVATE);
-            outputStream.write("          ,0/          ,0/          ,0/          ,0/          ,0/          ,0/".getBytes()); //0으로 초기화된 5개의 바 차트
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-hh:mm");
+        nowday = format.format(System.currentTimeMillis()); //현재 날짜 얻어오기
+        String filename = id+"_"+nowday+".json";//파일이름 지정
+        String filepath = "/data/data/com.kosmo.shooong/files/"+filename; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
+        File jsonfile = new File(filepath);
+        if (!jsonfile.exists()) { //파일 없으면 빈 파일 생성
+            jsonfile.createNewFile();
+            geoJson = new JsonObject();
+            properties = new JsonObject();
+            geometry = new JsonObject();
+            //coordinates = new JsonArray();
+            geometry.addProperty("type","MultiLineString");
+            geometry.add("coordinates",coordinates);
+            properties.addProperty("userId",id);
+            properties.addProperty("time",nowday);
+            geoJson.addProperty("type","Feature");
+            geoJson.add("properties",properties);
+            geoJson.add("geometry",geometry);
+            outputStream = getContext().openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(geoJson.toString().getBytes()); //0으로 초기화된 5개의 바 차트
             outputStream.close();
         }
         /*
