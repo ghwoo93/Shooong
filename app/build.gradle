@@ -41,6 +41,9 @@ dependencies {
      */
     //implementation 'com.mapbox.mapboxsdk:mapbox-android-core:2.0.0'
 
+    //gson
+    implementation 'com.google.code.gson:gson:2.8.6'
+
     //바 차트
     implementation 'com.github.blackfizz:eazegraph:1.2.2@aar'
 
