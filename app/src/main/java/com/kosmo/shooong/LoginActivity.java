@@ -63,7 +63,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             new LoginAsyncTask().execute(
-                    "http://192.168.0.15:8080/rest/member/json",
+                    "http://192.168.0.15:8080/shoong/android/member/json",
                     id.getText().toString(),
                     pwd.getText().toString());
         }
@@ -115,14 +115,13 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-
             //서버로부터 받은 데이타(JSON형식) 파싱
             //회원이 아닌 경우 빈 문자열
             Log.i("com.kosmo.kosmoapp","result:"+result);
             if(result !=null && result.length()!=0) {//회원인 경우
                 try {
                     JSONObject json = new JSONObject(result);
-                    String name = json.getString("name");
+                    String name = json.getString("userName");
                     Intent intent = new Intent(LoginActivity.this,MainActivity.class);
                     intent.putExtra("name",name);
                     startActivity(intent);
@@ -130,8 +129,9 @@ public class LoginActivity extends AppCompatActivity {
                     //아이디 비번저장
                     SharedPreferences preferences = getSharedPreferences("loginInfo",MODE_PRIVATE);
                     SharedPreferences.Editor editor =preferences.edit();
-                    editor.putString("id",json.getString("id"));
-                    editor.putString("pwd",json.getString("pwd"));
+                    editor.putString("id",json.getString("userId"));
+                    editor.putString("pwd",json.getString("userPWD"));
+                    Log.i("com.kosmo.kosmoapp","id:"+id+"pwd:"+pwd);
                     editor.commit();
                 }
                 catch(Exception e){e.printStackTrace();}
