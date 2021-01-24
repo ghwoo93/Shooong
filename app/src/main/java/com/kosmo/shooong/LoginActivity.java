@@ -117,7 +117,7 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             //서버로부터 받은 데이타(JSON형식) 파싱
             //회원이 아닌 경우 빈 문자열
-            Log.i("com.kosmo.kosmoapp","result:"+result);
+            Log.i("com.kosmo.shooong","result:"+result);
             if(result !=null && result.length()!=0) {//회원인 경우
                 try {
                     JSONObject json = new JSONObject(result);
@@ -129,9 +129,10 @@ public class LoginActivity extends AppCompatActivity {
                     //아이디 비번저장
                     SharedPreferences preferences = getSharedPreferences("loginInfo",MODE_PRIVATE);
                     SharedPreferences.Editor editor =preferences.edit();
+                    editor.putString("name",name);
                     editor.putString("id",json.getString("userId"));
                     editor.putString("pwd",json.getString("userPWD"));
-                    Log.i("com.kosmo.kosmoapp","id:"+id+"pwd:"+pwd);
+                    Log.i("com.kosmo.shooong","id:"+id+"pwd:"+pwd);
                     editor.commit();
                 }
                 catch(Exception e){e.printStackTrace();}
