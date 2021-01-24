@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -95,7 +96,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     JsonArray coordinates;
     JsonArray coordinates_;
     List<LatLng> lineLatLngList;
-    Button button_line, gongyu;
+    Button recordRoute, uploadRoute;
     boolean locflag = false;
     double speed, deltime, X_, Y_;
     private MapView mapView;
@@ -186,34 +187,44 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
 
         mapView.getMapAsync(new NaviOnMapReadyCallback());
 
-        button_line = view.findViewById(R.id.button_line);
-        //버튼에 리스너 부착
-        button_line.setOnClickListener(listener);
+        recordRoute = view.findViewById(R.id.route_record);
+        uploadRoute = view.findViewById(R.id.route_upload);
 
+        //버튼에 리스너 부착
+        recordRoute.setOnClickListener(recordListener);
+        uploadRoute.setOnClickListener(uploadListener);
         return view;
     }///////////////onCreateView
+
+    private View.OnClickListener uploadListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+
+        }
+    };
+
     //버튼 이벤트 처리]
-    private View.OnClickListener listener = new View.OnClickListener() {
+    private View.OnClickListener recordListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             new ShooongAsyncTask().execute(
                     "http://192.168.0.15:8080/shoong/android/member/json",id,pwd);
         }
     };//////////////////OnClickListener
-    //서버로 데이타 전송 및 응답을 받기 위한 스레드 정의
+
+    //PolyLine Draw & GeoJson IO 스레드 정의
     private class ShooongAsyncTask extends AsyncTask<String,Void,String>{
+
+        private WeakReference<Fragment_2> weakReference;
 
         @Override
         protected void onPreExecute() {
             locflag = !locflag;
 
-            if(button_line.getText().equals("측정 종료하기")){//서버에 전송하기
-                Log.i("com.kosmo.shooong", "종료하기 클릭");
-            }
             if(locflag) {
-                button_line.setText("측정 종료하기");
+                recordRoute.setText("측정 종료하기");
             } else {
-                button_line.setText("측정 시작하기");
+                recordRoute.setText("측정 시작하기");
                 //지오제이슨 생성
                 try {
                     setGeoJson();
@@ -245,6 +256,11 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         protected String doInBackground(String... strings) {
             double latitude;
             double longitude;
+            if(recordRoute.getText().equals("측정 종료하기")){//서버에 전송하기
+                Log.i("com.kosmo.shooong", "종료하기 클릭");
+                Log.i("com.kosmo.shooong", "서버에 전송");
+                return null;
+            }
             if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getContext(), "권한이 수락되지 않았습니다. 다시 시도해주세요", Toast.LENGTH_LONG).show();
                 return null;
@@ -256,8 +272,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             double distance = 0.0;
             while (locflag) { // 스레드
                 try {
-                    // 스레드에게 수행시킬 동작들 구현
-                    Thread.sleep(2000); // 2초간 Thread 휴식
                     // locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE); //퉷
                     // 와이파이 되어있으면 네트워크가 좋고 네트워크
                     Location location = mapboxMap.getLocationComponent().getLastKnownLocation();
@@ -277,7 +291,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     nowLatLng.add(latitude);
                     coordinates_.add(nowLatLng);
                     mHandler.sendEmptyMessage(200); //지도에 선을 그어주는 함수 추가
-                    X_ = latitude;Y_=longitude;
+                    //X_ = latitude;Y_=longitude;
                     deltime =  System.currentTimeMillis();
                     loctemp = location; // 위치 저장해서 2초뒤에 비교할거
                 } catch (Exception e) {
@@ -285,13 +299,19 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     Log.i("com.kosmo.shooong", "에러 발생 " + e);
                 }
             }
+            SystemClock.sleep(1000);
             return null;
+        }
+        @Override
+        protected void onPostExecute(String s) {
+            //doInBackground()메소드 완료 후 처리할 코드
+            super.onPostExecute(s);
         }
 
         @Override
-        protected void onPostExecute(String s) {
-
-            super.onPostExecute(s);
+        protected void onProgressUpdate(Void... values) {
+            //UI 변경 - DrawLine
+            super.onProgressUpdate(values);
         }
     }/////////////////ShooongAsyncTask
 
@@ -302,18 +322,17 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                 switch (msg.what) {
                     case 200:
                         Log.d("com.kosmo.shooong", "선그리기요청");
+
                         mapboxMap.addPolyline(new PolylineOptions()
                                 .addAll(lineLatLngList)
                                 .color(Color.parseColor("#F67A42"))
                                 .width(3));
                         break;
-
                 }
             }else{
                 for(Polyline p : mapboxMap.getPolylines()){
                     mapboxMap.removePolyline(p);}
                 lineLatLngList = new ArrayList<>();
-
             }
         }
     };
