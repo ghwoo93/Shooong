@@ -8,6 +8,7 @@ import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -39,12 +40,15 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.kosmo.shooong.LoginActivity;
+import com.kosmo.shooong.MainActivity;
 import com.kosmo.shooong.R;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
@@ -67,10 +71,21 @@ import com.mapbox.mapboxsdk.plugins.localization.LocalizationPlugin;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +116,8 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     double speed, deltime, X_, Y_;
     private MapView mapView;
     public MapboxMap mapboxMap;
-    String walkdata = "", nowday = "";
+    String nowday = "";
+    String filepath;
     TextView tvStepCount, nowspeed;
     LocationChange loc = new LocationChange(this);
     private String id;
@@ -199,23 +215,122 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     private View.OnClickListener uploadListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-
+            new ShoongAsyncTask().execute(
+                    "http://192.168.0.15:8080/shoong/android/course/upload/json");
         }
     };
+
+    private class ShoongAsyncTask extends AsyncTask<String,Void,String>{
+
+        private AlertDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            //프로그래스바용 다이얼로그 생성]
+            //빌더 생성 및 다이얼로그창 설정
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setCancelable(false);
+            builder.setView(R.layout.progress);
+            builder.setIcon(android.R.drawable.ic_menu_compass);
+            builder.setTitle("업로드");
+
+            //빌더로 다이얼로그창 생성
+            progressDialog = builder.create();
+            progressDialog.show();
+        }
+
+        @Override
+        protected String doInBackground(String[] params) {
+            StringBuffer serverData = new StringBuffer();
+            //[서버에 POST방식으로 요청하기]
+            URL serverUrl;
+            try {
+                serverUrl = new URL(params[0]);
+                HttpURLConnection conn=(HttpURLConnection)serverUrl.openConnection();
+                //연결 설정 하기
+                //1.POST방식으로 통신 설정:POST방식으로 설정시
+                // OutPutStream으로 파라미터를 서버에 전달
+                conn.setRequestMethod("POST");//디폴트는 GET방식
+                //setRequestMethod("GET")으로 설정하더라도
+                //아래 코드(setDoInput(true))가 추가되면 POST방식으로 변경된다.
+                conn.setDoInput(true);
+                //연결제한시간
+                conn.setConnectTimeout(3000);
+                // 요청 파라미터 출력(서버로 보내는 출력)
+                // - 파라미터는 쿼리 문자열의 형식으로 지정
+                // - 파라미터의 값으로 한국어 등을 송신하는 경우는 URL 인코딩을 해야 함.
+                // Request Body에 Data를 담기위해 OutputStream 객체를 생성.
+                if(params.length !=1){//파라미터 전달(아이디와 비번)
+                    OutputStream out = conn.getOutputStream();
+                    //전달할 데이터를 읽어온다
+                    BufferedReader br =
+                            new BufferedReader(new InputStreamReader
+                                    (new FileInputStream(new File(filepath))));
+                    int data = -1;
+                    char[] chars = new char[1024];
+                    //요청바디에 데이터 읽어서 보냄
+                    while((data=br.read(chars))!=-1) out.write(data);
+                    if(br!=null) br.close();
+                    if(out!=null) out.close();
+                }
+                //※getResponseCode() 나 getInputStream()호출해야 서버에 요청이 전달됨
+                if(conn.getResponseCode() ==HttpURLConnection.HTTP_OK){
+                    //서버로부터 받는 응답 내용:conn.getInputStream()
+                    InputStream is=conn.getInputStream();
+                    BufferedReader br =
+                            new BufferedReader(new InputStreamReader(is,"UTF-8"));
+                    String data;
+                    while((data=br.readLine())!=null){
+                        serverData.append(data);
+                    }
+                    br.close();
+                }
+            }
+            catch (Exception e){e.printStackTrace();}
+
+            //서버로부터 데이타를 너무 빨리 받아옴으로
+            //아래 코드 생략시 다이얼로그창이 보였다 바로 사라짐
+            return serverData.toString();
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            //서버로부터 받은 데이타(JSON형식) 파싱
+            //회원이 아닌 경우 빈 문자열
+            Log.i("com.kosmo.shooong","result:"+result);
+            if(result !=null && result.length()!=0) {//회원인 경우
+                try {
+                    JSONObject json = new JSONObject(result);
+                    String name = json.getString("userName");
+                    //finish()불필요-NO_HISTORY로 설정했기때문에(매니페스트에서)
+                }
+                catch(Exception e){e.printStackTrace();}
+
+            }
+
+            //다이얼로그 닫기
+            if(progressDialog!=null && progressDialog.isShowing())
+                progressDialog.dismiss();
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+    }
 
     //버튼 이벤트 처리]
     private View.OnClickListener recordListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            new ShooongAsyncTask().execute(
-                    "http://192.168.0.15:8080/shoong/android/member/json",id,pwd);
+            new ShooongAsyncTask().execute("http://192.168.0.15:8080/shoong/android/member/json",id,pwd);
         }
     };//////////////////OnClickListener
 
     //PolyLine Draw & GeoJson IO 스레드 정의
     private class ShooongAsyncTask extends AsyncTask<String,Void,String>{
 
-        private WeakReference<Fragment_2> weakReference;
+        //private WeakReference<Fragment_2> weakReference;
 
         @Override
         protected void onPreExecute() {
@@ -256,11 +371,12 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         protected String doInBackground(String... strings) {
             double latitude;
             double longitude;
+            /*
             if(recordRoute.getText().equals("측정 종료하기")){//서버에 전송하기
                 Log.i("com.kosmo.shooong", "종료하기 클릭");
                 Log.i("com.kosmo.shooong", "서버에 전송");
                 return null;
-            }
+            }*/
             if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getContext(), "권한이 수락되지 않았습니다. 다시 시도해주세요", Toast.LENGTH_LONG).show();
                 return null;
@@ -268,21 +384,22 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             Location loctemp =  mapboxMap.getLocationComponent().getLastKnownLocation();
             latitude = loctemp.getLatitude();
             longitude = loctemp.getLongitude();
-            Log.i("com.kosmo.shooong", "latlng " + latitude +" - "+longitude);
+            Log.i("com.kosmo.gps", "latlng " + latitude +" - "+longitude);
             double distance = 0.0;
             while (locflag) { // 스레드
                 try {
+                    Thread.sleep(1000); // 2초간 Thread 휴식
                     // locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE); //퉷
                     // 와이파이 되어있으면 네트워크가 좋고 네트워크
                     Location location = mapboxMap.getLocationComponent().getLastKnownLocation();
                     float locToMeter = location.distanceTo(loctemp); //2초전에 저장한 위치랑 현재위치 비교해서 m로 반환함
                     distance = distance + locToMeter;
-                    Log.i("com.kosmo.shooong", "loctoMe " + locToMeter);
+                    //Log.i("com.kosmo.shooong", "loctoMe " + locToMeter);
                     if(speed>1&&speed<180)//움직이지 않거나 GPS 신호가 잡히지 않을때는 speed 고정
                         nowspeed.setText(String.format(" %.1f km/s\n %d m 이동" ,(float)speed, (int)distance));
                     latitude = location.getLatitude();
                     longitude = location.getLongitude();
-                    Log.i("com.kosmo.shooong", "latlng " + latitude +" - "+longitude);
+                    //Log.i("com.kosmo.gps", "latlng " + latitude +" - "+longitude);
 
                     speed = locToMeter*1.8; //2초에 한번씩 불러옴
                     lineLatLngList.add(new LatLng(latitude, longitude)); //선을 연결할 좌표를 추가해줌
@@ -350,7 +467,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-hh:mm");
         nowday = format.format(System.currentTimeMillis()); //현재 날짜 얻어오기
         String filename = name+"_"+nowday+".json";//파일이름 지정
-        String filepath = "/data/data/com.kosmo.shooong/files/"+filename; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
+        filepath = "/data/data/com.kosmo.shooong/files/"+filename; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
         File jsonfile = new File(filepath);
         if (!jsonfile.exists()) { //파일 없으면 빈 파일 생성
             jsonfile.createNewFile();
