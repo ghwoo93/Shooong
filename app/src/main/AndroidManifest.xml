@@ -3,8 +3,9 @@
     package="com.kosmo.shooong">
     <!--인터넷 권한-서버연동-->
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!--찰영 이미지 갤러리에 저장하기위한 권한-사용자 동의 필요-->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <!--촬영 이미지 갤러리에 저장하기위한 권한-사용자 동의 필요-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:required="true"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <!-- 맵을 사용하기 위한  -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
