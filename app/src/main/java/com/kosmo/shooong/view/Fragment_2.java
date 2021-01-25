@@ -113,7 +113,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     List<LatLng> lineLatLngList;
     Button recordRoute, uploadRoute;
     boolean locflag = false;
-    double speed, deltime, X_, Y_;
+    double speed, deltime; //X_, Y_;
     private MapView mapView;
     public MapboxMap mapboxMap;
     String nowday = "";
@@ -246,42 +246,52 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             URL serverUrl;
             try {
                 serverUrl = new URL(params[0]);
+                Log.i("com.kosmo.shoong",params[0]);
                 HttpURLConnection conn=(HttpURLConnection)serverUrl.openConnection();
+                Log.i("com.kosmo.shoong","연결 열었다");
                 //연결 설정 하기
                 //1.POST방식으로 통신 설정:POST방식으로 설정시
                 // OutPutStream으로 파라미터를 서버에 전달
                 conn.setRequestMethod("POST");//디폴트는 GET방식
+                Log.i("com.kosmo.shoong","연결 포스트 방식");
                 //setRequestMethod("GET")으로 설정하더라도
                 //아래 코드(setDoInput(true))가 추가되면 POST방식으로 변경된다.
                 conn.setDoInput(true);
                 //연결제한시간
-                conn.setConnectTimeout(3000);
+                //conn.setConnectTimeout(3000);
                 // 요청 파라미터 출력(서버로 보내는 출력)
                 // - 파라미터는 쿼리 문자열의 형식으로 지정
                 // - 파라미터의 값으로 한국어 등을 송신하는 경우는 URL 인코딩을 해야 함.
                 // Request Body에 Data를 담기위해 OutputStream 객체를 생성.
-                if(params.length !=1){//파라미터 전달(아이디와 비번)
-                    OutputStream out = conn.getOutputStream();
-                    //전달할 데이터를 읽어온다
-                    BufferedReader br =
-                            new BufferedReader(new InputStreamReader
-                                    (new FileInputStream(new File(filepath))));
-                    int data = -1;
-                    char[] chars = new char[1024];
-                    //요청바디에 데이터 읽어서 보냄
-                    while((data=br.read(chars))!=-1) out.write(data);
-                    if(br!=null) br.close();
-                    if(out!=null) out.close();
+                Log.i("com.kosmo.shoong","파라미터 전달");
+                OutputStream out = conn.getOutputStream();
+                //전달할 데이터를 읽어온다
+                BufferedReader br =
+                        new BufferedReader(new InputStreamReader
+                                (new FileInputStream(new File(filepath))));
+                StringBuffer sb = new StringBuffer();
+                Log.i("com.kosmo.shoong","전달할 데이터를 읽어온다");
+                int data = -1;
+                char[] chars = new char[1024];
+                //요청바디에 데이터 읽어서 보냄
+                while((data=br.read(chars))!=-1) {
+                    sb.append(chars,0,data);
+                    //out.write(data);
+                    Log.i("com.kosmo.shoong","request_result:"+sb);
                 }
+                out.write(sb.toString().getBytes());
+                Log.i("com.kosmo.shoong","요청바디에 데이터 읽어서 보냄");
+                if(br!=null) br.close();
+                if(out!=null) out.close();
                 //※getResponseCode() 나 getInputStream()호출해야 서버에 요청이 전달됨
                 if(conn.getResponseCode() ==HttpURLConnection.HTTP_OK){
                     //서버로부터 받는 응답 내용:conn.getInputStream()
                     InputStream is=conn.getInputStream();
-                    BufferedReader br =
-                            new BufferedReader(new InputStreamReader(is,"UTF-8"));
-                    String data;
-                    while((data=br.readLine())!=null){
-                        serverData.append(data);
+                    br = new BufferedReader(new InputStreamReader(is,"UTF-8"));
+                    String dataStr;
+                    while((dataStr=br.readLine())!=null){
+                        serverData.append(dataStr);
+                        Log.i("com.kosmo.shoong","response_result:"+dataStr);
                     }
                     br.close();
                 }
@@ -297,7 +307,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         protected void onPostExecute(String result) {
             //서버로부터 받은 데이타(JSON형식) 파싱
             //회원이 아닌 경우 빈 문자열
-            Log.i("com.kosmo.shooong","result:"+result);
+            Log.i("com.kosmo.shoong","result:"+result);
             if(result !=null && result.length()!=0) {//회원인 경우
                 try {
                     JSONObject json = new JSONObject(result);
@@ -371,12 +381,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         protected String doInBackground(String... strings) {
             double latitude;
             double longitude;
-            /*
-            if(recordRoute.getText().equals("측정 종료하기")){//서버에 전송하기
-                Log.i("com.kosmo.shooong", "종료하기 클릭");
-                Log.i("com.kosmo.shooong", "서버에 전송");
-                return null;
-            }*/
+
             if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getContext(), "권한이 수락되지 않았습니다. 다시 시도해주세요", Toast.LENGTH_LONG).show();
                 return null;
@@ -477,6 +482,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             //coordinates = new JsonArray();
             geometry.addProperty("type","MultiLineString");
             geometry.add("coordinates",coordinates);
+            properties.addProperty("filename",filename);
             properties.addProperty("userId",id);
             properties.addProperty("userName",name);
             properties.addProperty("time",nowday);
@@ -487,38 +493,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             outputStream.write(geoJson.toString().getBytes());
             outputStream.close();
         }
-        /*
-        FileReader filereader = new FileReader(txtfile);
-        int singleCh = 0;
-        String walkdata = "";
-        while ((singleCh = filereader.read()) != -1) { // 파일 읽어오기(한글자씩)
-            walkdata = walkdata + (char) singleCh;
-        }
-        filereader.close();
-
-        String[] daywork = walkdata.split("/");   //날짜별 split로 구분 ex) 2020-07-15,1000 >>/<< 2020-07-14,2000/
-        if (daywork[0].substring(0, 10).equals(nowday)) { // 현재 날짜와 구분하여 다르면 새 날짜 추가
-            daywork[0] = nowday + "," + mSteps;
-        }
-        String stringa = walkdata;
-        if (!stringa.substring(0, 10).equals(nowday)) {
-            stringa = nowday + "," + mSteps + "/" + stringa;
-        } else {
-            //첫번째 / 찾아서 그 전까지 replace
-            int index = stringa.indexOf("/");
-            stringa = stringa.replace(stringa.substring(0, index), nowday + "," + mSteps);
-        }
-        // beforeDayStep = Integer.parseInt(stringa.split("/")[1].split(",")[1]);
-        //데이터 수동으로 넣을라면 여기 넣으면 됨
-        //stringa ="2020-07-20,4177/2020-07-19,6671/2020-07-17,5715/2020-07-16,8560/2020-07-15,9248/2020-07-14,5776/2020-07-13,6681/2020-07-12,3140/";
-        try {
-            outputStream = getContext().openFileOutput(filenamea, Context.MODE_PRIVATE);
-            outputStream.write(stringa.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-         */
     }
 
     public static CharSequence getsteps() {
@@ -594,8 +568,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         mapView.onResume();
     }
 
-
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -653,9 +625,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     Toast.makeText(activity.getContext(), ""+location.getLatitude() + location.getLongitude(), Toast.LENGTH_SHORT).show();
                 }
             }
-
-
-
         }
 
         /**
