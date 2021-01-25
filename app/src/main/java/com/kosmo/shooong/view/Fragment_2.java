@@ -50,6 +50,7 @@ import com.google.gson.JsonObject;
 import com.kosmo.shooong.LoginActivity;
 import com.kosmo.shooong.MainActivity;
 import com.kosmo.shooong.R;
+import com.kosmo.shooong.utils.FileUploadUtils;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineResult;
@@ -83,9 +84,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,13 +120,9 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     double speed, deltime; //X_, Y_;
     private MapView mapView;
     public MapboxMap mapboxMap;
-    String nowday = "";
-    String filepath;
     TextView tvStepCount, nowspeed;
     LocationChange loc = new LocationChange(this);
-    private String id;
-    private String name;
-    private String pwd;
+    File jsonfile;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -241,66 +241,10 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
 
         @Override
         protected String doInBackground(String[] params) {
-            StringBuffer serverData = new StringBuffer();
-            //[서버에 POST방식으로 요청하기]
-            URL serverUrl;
-            try {
-                serverUrl = new URL(params[0]);
-                Log.i("com.kosmo.shoong",params[0]);
-                HttpURLConnection conn=(HttpURLConnection)serverUrl.openConnection();
-                Log.i("com.kosmo.shoong","연결 열었다");
-                //연결 설정 하기
-                //1.POST방식으로 통신 설정:POST방식으로 설정시
-                // OutPutStream으로 파라미터를 서버에 전달
-                conn.setRequestMethod("POST");//디폴트는 GET방식
-                Log.i("com.kosmo.shoong","연결 포스트 방식");
-                //setRequestMethod("GET")으로 설정하더라도
-                //아래 코드(setDoInput(true))가 추가되면 POST방식으로 변경된다.
-                conn.setDoInput(true);
-                //연결제한시간
-                //conn.setConnectTimeout(3000);
-                // 요청 파라미터 출력(서버로 보내는 출력)
-                // - 파라미터는 쿼리 문자열의 형식으로 지정
-                // - 파라미터의 값으로 한국어 등을 송신하는 경우는 URL 인코딩을 해야 함.
-                // Request Body에 Data를 담기위해 OutputStream 객체를 생성.
-                Log.i("com.kosmo.shoong","파라미터 전달");
-                OutputStream out = conn.getOutputStream();
-                //전달할 데이터를 읽어온다
-                BufferedReader br =
-                        new BufferedReader(new InputStreamReader
-                                (new FileInputStream(new File(filepath))));
-                StringBuffer sb = new StringBuffer();
-                Log.i("com.kosmo.shoong","전달할 데이터를 읽어온다");
-                int data = -1;
-                char[] chars = new char[1024];
-                //요청바디에 데이터 읽어서 보냄
-                while((data=br.read(chars))!=-1) {
-                    sb.append(chars,0,data);
-                    //out.write(data);
-                    Log.i("com.kosmo.shoong","request_result:"+sb);
-                }
-                out.write(sb.toString().getBytes());
-                Log.i("com.kosmo.shoong","요청바디에 데이터 읽어서 보냄");
-                if(br!=null) br.close();
-                if(out!=null) out.close();
-                //※getResponseCode() 나 getInputStream()호출해야 서버에 요청이 전달됨
-                if(conn.getResponseCode() ==HttpURLConnection.HTTP_OK){
-                    //서버로부터 받는 응답 내용:conn.getInputStream()
-                    InputStream is=conn.getInputStream();
-                    br = new BufferedReader(new InputStreamReader(is,"UTF-8"));
-                    String dataStr;
-                    while((dataStr=br.readLine())!=null){
-                        serverData.append(dataStr);
-                        Log.i("com.kosmo.shoong","response_result:"+dataStr);
-                    }
-                    br.close();
-                }
-            }
-            catch (Exception e){e.printStackTrace();}
-
-            //서버로부터 데이타를 너무 빨리 받아옴으로
-            //아래 코드 생략시 다이얼로그창이 보였다 바로 사라짐
-            return serverData.toString();
+            Log.i("com.kosmo.shoong","파일 업로드 전");
+            FileUploadUtils.send2Server(jsonfile,params[0]);
+            Log.i("com.kosmo.shoong","파일 업로드 후");
+            return "";
         }
 
         @Override
@@ -333,7 +277,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     private View.OnClickListener recordListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            new ShooongAsyncTask().execute("http://192.168.0.15:8080/shoong/android/member/json",id,pwd);
+            new ShooongAsyncTask().execute();
         }
     };//////////////////OnClickListener
 
@@ -358,12 +302,15 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                 }
                 ContentValues values = new ContentValues();
                 FrameLayout container = Fragment_2.this.mapView;//findViewById(R.id.mapView);
+
+                /*
                 container.buildDrawingCache();
                 Bitmap captureView = container.getDrawingCache();
                 values.put(MediaStore.Images.Media.DISPLAY_NAME, "image_1024.JPG");
                 values.put(MediaStore.Images.Media.MIME_TYPE, "image/*");
                 ContentResolver contentResolver = getContext().getContentResolver();
                 Uri item = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
                 FileOutputStream fos;
                 Log.i("com.kosmo.shooong", "클릭");
                 try {
@@ -373,6 +320,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     captureView.compress(Bitmap.CompressFormat.JPEG, 100, fos);
                 } catch (Exception e) { e.printStackTrace(); }
                 Toast.makeText(getContext(), "Captured!", Toast.LENGTH_LONG).show();
+                 */
             }
             super.onPreExecute();
         }
@@ -466,14 +414,14 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         JsonObject geometry;
         //JsonArray coordinates;
         SharedPreferences preferences = getContext().getSharedPreferences("loginInfo", Activity.MODE_PRIVATE);
-        id=preferences.getString("id",null);//아이디 얻기
-        name=preferences.getString("name",null);
+        String id=preferences.getString("id",null);//아이디 얻기
+        String name=preferences.getString("name",null);
         Log.i("com.kosmo.shooong",id);
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-hh:mm");
-        nowday = format.format(System.currentTimeMillis()); //현재 날짜 얻어오기
+        SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_hh_mm");
+        String nowday = format.format(System.currentTimeMillis()); //현재 날짜 얻어오기
         String filename = name+"_"+nowday+".json";//파일이름 지정
-        filepath = "/data/data/com.kosmo.shooong/files/"+filename; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
-        File jsonfile = new File(filepath);
+        String filepath = "/data/data/com.kosmo.shooong/files/"+filename; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
+        jsonfile = new File(filepath);
         if (!jsonfile.exists()) { //파일 없으면 빈 파일 생성
             jsonfile.createNewFile();
             geoJson = new JsonObject();
