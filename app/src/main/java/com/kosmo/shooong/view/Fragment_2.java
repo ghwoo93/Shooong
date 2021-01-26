@@ -5,10 +5,8 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -20,15 +18,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,8 +42,6 @@ import androidx.fragment.app.Fragment;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.kosmo.shooong.LoginActivity;
-import com.kosmo.shooong.MainActivity;
 import com.kosmo.shooong.R;
 import com.kosmo.shooong.utils.FileUploadUtils;
 import com.mapbox.android.core.location.LocationEngine;
@@ -74,22 +67,10 @@ import com.mapbox.mapboxsdk.style.layers.Layer;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,6 +96,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     JsonArray coordinates;
     JsonArray coordinates_;
     List<LatLng> lineLatLngList;
+    //JsonObject jsonProperties;
     Button recordRoute, uploadRoute;
     boolean locflag = false;
     double speed, deltime; //X_, Y_;
@@ -122,7 +104,8 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     public MapboxMap mapboxMap;
     TextView tvStepCount, nowspeed;
     LocationChange loc = new LocationChange(this);
-    File jsonfile;
+    File jsonFile;
+    long startTime,endTime;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -209,6 +192,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         //버튼에 리스너 부착
         recordRoute.setOnClickListener(recordListener);
         uploadRoute.setOnClickListener(uploadListener);
+        uploadRoute.setEnabled(false);
         return view;
     }///////////////onCreateView
 
@@ -216,7 +200,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         @Override
         public void onClick(View view) {
             new ShoongAsyncTask().execute(
-                    "http://192.168.0.15:8080/shoong/android/course/upload/json");
+                    "http://192.168.0.15:8080/shoong/record/upload/json");
         }
     };
 
@@ -242,7 +226,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         @Override
         protected String doInBackground(String[] params) {
             Log.i("com.kosmo.shoong","파일 업로드 전");
-            FileUploadUtils.send2Server(jsonfile,params[0]);
+            FileUploadUtils.send2Server(jsonFile,params[0]);
             Log.i("com.kosmo.shoong","파일 업로드 후");
             return "";
         }
@@ -292,35 +276,19 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
 
             if(locflag) {
                 recordRoute.setText("측정 종료하기");
+                startTime = System.currentTimeMillis();
+                uploadRoute.setEnabled(false);
             } else {
                 recordRoute.setText("측정 시작하기");
+                endTime = System.currentTimeMillis();
+                uploadRoute.setEnabled(true);
+
                 //지오제이슨 생성
                 try {
                     setGeoJson();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                ContentValues values = new ContentValues();
-                FrameLayout container = Fragment_2.this.mapView;//findViewById(R.id.mapView);
-
-                /*
-                container.buildDrawingCache();
-                Bitmap captureView = container.getDrawingCache();
-                values.put(MediaStore.Images.Media.DISPLAY_NAME, "image_1024.JPG");
-                values.put(MediaStore.Images.Media.MIME_TYPE, "image/*");
-                ContentResolver contentResolver = getContext().getContentResolver();
-                Uri item = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-                FileOutputStream fos;
-                Log.i("com.kosmo.shooong", "클릭");
-                try {
-                    ParcelFileDescriptor pdf = contentResolver.openFileDescriptor(item, "w", null);
-                    fos = new FileOutputStream(pdf.getFileDescriptor());
-
-                    captureView.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-                } catch (Exception e) { e.printStackTrace(); }
-                Toast.makeText(getContext(), "Captured!", Toast.LENGTH_LONG).show();
-                 */
             }
             super.onPreExecute();
         }
@@ -342,7 +310,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             while (locflag) { // 스레드
                 try {
                     Thread.sleep(1000); // 2초간 Thread 휴식
-                    // locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE); //퉷
+                    locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE); //퉷
                     // 와이파이 되어있으면 네트워크가 좋고 네트워크
                     Location location = mapboxMap.getLocationComponent().getLastKnownLocation();
                     float locToMeter = location.distanceTo(loctemp); //2초전에 저장한 위치랑 현재위치 비교해서 m로 반환함
@@ -360,6 +328,13 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     nowLatLng.add(longitude);
                     nowLatLng.add(latitude);
                     coordinates_.add(nowLatLng);
+                    /*
+                    if(recordRoute.getText().equals("측정 종료하기")){
+                        SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_hh_mm");
+                        String nowday = format.format(System.currentTimeMillis()); //현재 날짜 얻어오기
+                        jsonProperties.addProperty("endTime",nowday);
+                    }
+                     */
                     mHandler.sendEmptyMessage(200); //지도에 선을 그어주는 함수 추가
                     //X_ = latitude;Y_=longitude;
                     deltime =  System.currentTimeMillis();
@@ -410,7 +385,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     private void setGeoJson() throws IOException {
         FileOutputStream outputStream;
         JsonObject geoJson;
-        JsonObject properties;
+        JsonObject jsonProperties;
         JsonObject geometry;
         //JsonArray coordinates;
         SharedPreferences preferences = getContext().getSharedPreferences("loginInfo", Activity.MODE_PRIVATE);
@@ -418,24 +393,25 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         String name=preferences.getString("name",null);
         Log.i("com.kosmo.shooong",id);
         SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_hh_mm");
-        String nowday = format.format(System.currentTimeMillis()); //현재 날짜 얻어오기
+        String nowday = format.format(startTime); //현재 날짜 얻어오기
         String filename = name+"_"+nowday+".json";//파일이름 지정
         String filepath = "/data/data/com.kosmo.shooong/files/"+filename; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
-        jsonfile = new File(filepath);
-        if (!jsonfile.exists()) { //파일 없으면 빈 파일 생성
-            jsonfile.createNewFile();
+        jsonFile = new File(filepath);
+        if (!jsonFile.exists()) { //파일 없으면 빈 파일 생성
+            jsonFile.createNewFile();
             geoJson = new JsonObject();
-            properties = new JsonObject();
+            jsonProperties = new JsonObject();
             geometry = new JsonObject();
             //coordinates = new JsonArray();
             geometry.addProperty("type","MultiLineString");
             geometry.add("coordinates",coordinates);
-            properties.addProperty("filename",filename);
-            properties.addProperty("userId",id);
-            properties.addProperty("userName",name);
-            properties.addProperty("time",nowday);
+            jsonProperties.addProperty("filename",filename);
+            jsonProperties.addProperty("userId",id);
+            jsonProperties.addProperty("userName",name);
+            jsonProperties.addProperty("startTime",nowday);
+            jsonProperties.addProperty("duration",(endTime-startTime)/1000);
             geoJson.addProperty("type","Feature");
-            geoJson.add("properties",properties);
+            geoJson.add("properties", jsonProperties);
             geoJson.add("geometry",geometry);
             outputStream = getContext().openFileOutput(filename, Context.MODE_PRIVATE);
             outputStream.write(geoJson.toString().getBytes());
@@ -458,7 +434,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                 // initial value
                 mCounterSteps = (int) event.values[0];
             }
-            //  mSteps = (int) event.values[0] - mCounterSteps; // 앱 켤때마다 카운터 0으로 초기화 시킴
+            mSteps = (int) event.values[0] - mCounterSteps; // 앱 켤때마다 카운터 0으로 초기화 시킴
             tvStepCount.setText("현재 걸음 수 : " + (int) event.values[0]);
 
             mSteps = (int) event.values[0];
@@ -583,9 +559,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         @Override
         public void onFailure(@NonNull Exception exception) {
             Fragment_2 activity = activityWeakReference.get();
-
         }
     }
-
-
 }
