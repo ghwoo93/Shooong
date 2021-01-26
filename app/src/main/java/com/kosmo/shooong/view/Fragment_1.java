@@ -58,9 +58,11 @@ public class Fragment_1 extends Fragment {
         //리스트뷰와 어댑터 연결]
         listView.setAdapter(adapter);
         //데이타는 스레드로 원격 서버에서 받아 온다
-        new ItemsAsyncTask().execute("http://192.168.0.15:8080/rest/photos");
+        new ItemsAsyncTask().execute();
         return view;
     }/////////
+
+    //파일로
     private class ItemsAsyncTask extends AsyncTask<String,Void,Void>{
         @Override
         protected Void doInBackground(String... params) {
