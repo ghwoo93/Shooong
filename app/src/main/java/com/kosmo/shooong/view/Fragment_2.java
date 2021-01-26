@@ -49,6 +49,8 @@ import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineResult;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
+import com.mapbox.geojson.MultiLineString;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
@@ -63,6 +65,8 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.localization.LocalizationPlugin;
 import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.turf.TurfConstants;
+import com.mapbox.turf.TurfMeasurement;
 
 
 import org.json.JSONObject;
@@ -96,6 +100,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     JsonArray coordinates;
     JsonArray coordinates_;
     List<LatLng> lineLatLngList;
+    List<Point> pointsList;
     //JsonObject jsonProperties;
     Button recordRoute, uploadRoute;
     boolean locflag = false;
@@ -133,6 +138,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         }
         private void initCoordinates() {
             lineLatLngList = new ArrayList<>();
+            pointsList = new ArrayList<>();
             coordinates = new JsonArray();
             coordinates_ = new JsonArray();
             coordinates.add(coordinates_);
@@ -306,11 +312,12 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             latitude = loctemp.getLatitude();
             longitude = loctemp.getLongitude();
             Log.i("com.kosmo.gps", "latlng " + latitude +" - "+longitude);
+
             double distance = 0.0;
             while (locflag) { // 스레드
                 try {
                     Thread.sleep(1000); // 2초간 Thread 휴식
-                    locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE); //퉷
+                    //locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE); //퉷
                     // 와이파이 되어있으면 네트워크가 좋고 네트워크
                     Location location = mapboxMap.getLocationComponent().getLastKnownLocation();
                     float locToMeter = location.distanceTo(loctemp); //2초전에 저장한 위치랑 현재위치 비교해서 m로 반환함
@@ -320,13 +327,18 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                         nowspeed.setText(String.format(" %.1f km/s\n %d m 이동" ,(float)speed, (int)distance));
                     latitude = location.getLatitude();
                     longitude = location.getLongitude();
-                    //Log.i("com.kosmo.gps", "latlng " + latitude +" - "+longitude);
+                    Log.i("com.kosmo.gps", "latlng " + latitude +" - "+longitude);
 
                     speed = locToMeter*1.8; //2초에 한번씩 불러옴
+
                     lineLatLngList.add(new LatLng(latitude, longitude)); //선을 연결할 좌표를 추가해줌
                     JsonArray nowLatLng = new JsonArray();
                     nowLatLng.add(longitude);
                     nowLatLng.add(latitude);
+                    boolean flag = pointsList.add(Point.fromLngLat(longitude,latitude));
+                    Log.i("com.kosmo.shoong", flag?"들어감":"안들어감");
+                    for(int i=0;i<pointsList.size();i++)
+                        Log.i("com.kosmo.shoong", pointsList.get(i).toString());
                     coordinates_.add(nowLatLng);
                     /*
                     if(recordRoute.getText().equals("측정 종료하기")){
@@ -397,20 +409,23 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         String filename = name+"_"+nowday+".json";//파일이름 지정
         String filepath = "/data/data/com.kosmo.shooong/files/"+filename; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
         jsonFile = new File(filepath);
+        //TurfMeasurement. lineLatLngList (, TurfConstants.UNIT_KILOMETERS);
+        //Log.i("com.kosmo.shoong",Double.toString(TurfMeasurement.length(pointsList,TurfConstants.UNIT_KILOMETERS)));
         if (!jsonFile.exists()) { //파일 없으면 빈 파일 생성
             jsonFile.createNewFile();
             geoJson = new JsonObject();
             jsonProperties = new JsonObject();
             geometry = new JsonObject();
             //coordinates = new JsonArray();
-            geometry.addProperty("type","MultiLineString");
-            geometry.add("coordinates",coordinates);
+            geoJson.addProperty("type","Feature");
             jsonProperties.addProperty("filename",filename);
             jsonProperties.addProperty("userId",id);
             jsonProperties.addProperty("userName",name);
             jsonProperties.addProperty("startTime",nowday);
             jsonProperties.addProperty("duration",(endTime-startTime)/1000);
-            geoJson.addProperty("type","Feature");
+            jsonProperties.addProperty("recordLength",TurfMeasurement.length(pointsList,TurfConstants.UNIT_KILOMETRES));
+            geometry.addProperty("type","MultiLineString");
+            geometry.add("coordinates",coordinates);
             geoJson.add("properties", jsonProperties);
             geoJson.add("geometry",geometry);
             outputStream = getContext().openFileOutput(filename, Context.MODE_PRIVATE);
