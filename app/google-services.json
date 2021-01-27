@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "169183187916",
+    "project_id": "shoong-a1058",
+    "storage_bucket": "shoong-a1058.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:169183187916:android:c4b5e6a59b03b87d2b0369",
+        "android_client_info": {
+          "package_name": "com.kosmo.shooong"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "169183187916-t00ggidiohagsq8lhbk859koo6l174i2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkZo5Jlga-4yPnxMQe9psmfY35Tc6j9IM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "169183187916-t00ggidiohagsq8lhbk859koo6l174i2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
