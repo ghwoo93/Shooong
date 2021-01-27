@@ -1,12 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <ListView
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/picassoListView"
-        />
+        android:id="@+id/capturezone"
+        android:layout_weight ="1"
+        >
+        <ListView
+            android:id="@+id/picassoListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+        </ListView>
+    </FrameLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="bottom"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:layout_weight ="1">
+        <Button
+            android:id="@+id/route_record"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="기록 업로드"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            ></Button>
+        <Button
+            android:id="@+id/route_upload"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="기록 삭제"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            ></Button>
+    </LinearLayout>
 </LinearLayout>

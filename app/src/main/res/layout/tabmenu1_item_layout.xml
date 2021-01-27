@@ -5,9 +5,11 @@
     android:layout_height="30dp"
     android:padding="15dp"
     >
-    <ImageView
+    <TextView
         android:id="@+id/itemicon"
-        android:layout_weight="1"
+        android:textSize="20sp"
+        android:layout_weight="2"
+        android:gravity="center"
         android:layout_width="0dp"
         android:layout_height="100dp" />
     <TextView

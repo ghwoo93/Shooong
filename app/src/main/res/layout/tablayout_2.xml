@@ -44,7 +44,7 @@
         android:orientation="horizontal"
         android:layout_weight ="1">
         <Button
-            android:id="@+id/button_line"
+            android:id="@+id/route_record"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -52,11 +52,11 @@
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             ></Button>
         <Button
-            android:id="@+id/insta"
+            android:id="@+id/route_upload"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="산책할 만한 공원 찾기"
+            android:text="업로드"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             ></Button>
 

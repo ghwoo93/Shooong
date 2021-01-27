@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -19,14 +18,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.ParcelFileDescriptor;
-import android.provider.MediaStore;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +35,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
@@ -45,11 +43,14 @@ import androidx.fragment.app.Fragment;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.kosmo.shooong.R;
+import com.kosmo.shooong.utils.FileUploadUtils;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineResult;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
+import com.mapbox.geojson.MultiLineString;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
@@ -64,7 +65,11 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.localization.LocalizationPlugin;
 import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.turf.TurfConstants;
+import com.mapbox.turf.TurfMeasurement;
 
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -95,17 +100,17 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     JsonArray coordinates;
     JsonArray coordinates_;
     List<LatLng> lineLatLngList;
-    Button button_line, gongyu;
+    List<Point> pointsList;
+    //JsonObject jsonProperties;
+    Button recordRoute, uploadRoute;
     boolean locflag = false;
-    double speed, deltime, X_, Y_;
+    double speed, deltime; //X_, Y_;
     private MapView mapView;
     public MapboxMap mapboxMap;
-    String walkdata = "", nowday = "";
     TextView tvStepCount, nowspeed;
     LocationChange loc = new LocationChange(this);
-    private String id;
-    private String name;
-    private String pwd;
+    File jsonFile;
+    long startTime,endTime;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -133,6 +138,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         }
         private void initCoordinates() {
             lineLatLngList = new ArrayList<>();
+            pointsList = new ArrayList<>();
             coordinates = new JsonArray();
             coordinates_ = new JsonArray();
             coordinates.add(coordinates_);
@@ -186,57 +192,109 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
 
         mapView.getMapAsync(new NaviOnMapReadyCallback());
 
-        button_line = view.findViewById(R.id.button_line);
-        //버튼에 리스너 부착
-        button_line.setOnClickListener(listener);
+        recordRoute = view.findViewById(R.id.route_record);
+        uploadRoute = view.findViewById(R.id.route_upload);
 
+        //버튼에 리스너 부착
+        recordRoute.setOnClickListener(recordListener);
+        uploadRoute.setOnClickListener(uploadListener);
+        uploadRoute.setEnabled(false);
         return view;
     }///////////////onCreateView
-    //버튼 이벤트 처리]
-    private View.OnClickListener listener = new View.OnClickListener() {
+
+    private View.OnClickListener uploadListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            new ShooongAsyncTask().execute(
-                    "http://192.168.0.15:8080/shoong/android/member/json",id,pwd);
+            new ShoongAsyncTask().execute(
+                    "http://192.168.0.15:8080/shoong/record/upload/json");
+        }
+    };
+
+    private class ShoongAsyncTask extends AsyncTask<String,Void,String>{
+
+        private AlertDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            //프로그래스바용 다이얼로그 생성]
+            //빌더 생성 및 다이얼로그창 설정
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setCancelable(false);
+            builder.setView(R.layout.progress);
+            builder.setIcon(android.R.drawable.ic_menu_compass);
+            builder.setTitle("업로드");
+
+            //빌더로 다이얼로그창 생성
+            progressDialog = builder.create();
+            progressDialog.show();
+        }
+
+        @Override
+        protected String doInBackground(String[] params) {
+            Log.i("com.kosmo.shoong","파일 업로드 전");
+            FileUploadUtils.send2Server(jsonFile,params[0]);
+            Log.i("com.kosmo.shoong","파일 업로드 후");
+            return "";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            //서버로부터 받은 데이타(JSON형식) 파싱
+            //회원이 아닌 경우 빈 문자열
+            Log.i("com.kosmo.shoong","result:"+result);
+            if(result !=null && result.length()!=0) {//회원인 경우
+                try {
+                    JSONObject json = new JSONObject(result);
+                    String name = json.getString("userName");
+                    //finish()불필요-NO_HISTORY로 설정했기때문에(매니페스트에서)
+                }
+                catch(Exception e){e.printStackTrace();}
+
+            }
+
+            //다이얼로그 닫기
+            if(progressDialog!=null && progressDialog.isShowing())
+                progressDialog.dismiss();
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+    }
+
+    //버튼 이벤트 처리]
+    private View.OnClickListener recordListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            new ShooongAsyncTask().execute();
         }
     };//////////////////OnClickListener
-    //서버로 데이타 전송 및 응답을 받기 위한 스레드 정의
+
+    //PolyLine Draw & GeoJson IO 스레드 정의
     private class ShooongAsyncTask extends AsyncTask<String,Void,String>{
+
+        //private WeakReference<Fragment_2> weakReference;
 
         @Override
         protected void onPreExecute() {
             locflag = !locflag;
 
-            if(button_line.getText().equals("측정 종료하기")){//서버에 전송하기
-                Log.i("com.kosmo.shooong", "종료하기 클릭");
-            }
             if(locflag) {
-                button_line.setText("측정 종료하기");
+                recordRoute.setText("측정 종료하기");
+                startTime = System.currentTimeMillis();
+                uploadRoute.setEnabled(false);
             } else {
-                button_line.setText("측정 시작하기");
+                recordRoute.setText("측정 시작하기");
+                endTime = System.currentTimeMillis();
+                uploadRoute.setEnabled(true);
+
                 //지오제이슨 생성
                 try {
                     setGeoJson();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                ContentValues values = new ContentValues();
-                FrameLayout container = Fragment_2.this.mapView;//findViewById(R.id.mapView);
-                container.buildDrawingCache();
-                Bitmap captureView = container.getDrawingCache();
-                values.put(MediaStore.Images.Media.DISPLAY_NAME, "image_1024.JPG");
-                values.put(MediaStore.Images.Media.MIME_TYPE, "image/*");
-                ContentResolver contentResolver = getContext().getContentResolver();
-                Uri item = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                FileOutputStream fos;
-                Log.i("com.kosmo.shooong", "클릭");
-                try {
-                    ParcelFileDescriptor pdf = contentResolver.openFileDescriptor(item, "w", null);
-                    fos = new FileOutputStream(pdf.getFileDescriptor());
-
-                    captureView.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-                } catch (Exception e) { e.printStackTrace(); }
-                Toast.makeText(getContext(), "Captured!", Toast.LENGTH_LONG).show();
             }
             super.onPreExecute();
         }
@@ -245,6 +303,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         protected String doInBackground(String... strings) {
             double latitude;
             double longitude;
+
             if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getContext(), "권한이 수락되지 않았습니다. 다시 시도해주세요", Toast.LENGTH_LONG).show();
                 return null;
@@ -252,32 +311,44 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             Location loctemp =  mapboxMap.getLocationComponent().getLastKnownLocation();
             latitude = loctemp.getLatitude();
             longitude = loctemp.getLongitude();
-            Log.i("com.kosmo.shooong", "latlng " + latitude +" - "+longitude);
+            Log.i("com.kosmo.gps", "latlng " + latitude +" - "+longitude);
+
             double distance = 0.0;
             while (locflag) { // 스레드
                 try {
-                    // 스레드에게 수행시킬 동작들 구현
-                    Thread.sleep(2000); // 2초간 Thread 휴식
-                    // locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE); //퉷
+                    Thread.sleep(1000); // 2초간 Thread 휴식
+                    //locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE); //퉷
                     // 와이파이 되어있으면 네트워크가 좋고 네트워크
                     Location location = mapboxMap.getLocationComponent().getLastKnownLocation();
                     float locToMeter = location.distanceTo(loctemp); //2초전에 저장한 위치랑 현재위치 비교해서 m로 반환함
                     distance = distance + locToMeter;
-                    Log.i("com.kosmo.shooong", "loctoMe " + locToMeter);
+                    //Log.i("com.kosmo.shooong", "loctoMe " + locToMeter);
                     if(speed>1&&speed<180)//움직이지 않거나 GPS 신호가 잡히지 않을때는 speed 고정
                         nowspeed.setText(String.format(" %.1f km/s\n %d m 이동" ,(float)speed, (int)distance));
                     latitude = location.getLatitude();
                     longitude = location.getLongitude();
-                    Log.i("com.kosmo.shooong", "latlng " + latitude +" - "+longitude);
+                    Log.i("com.kosmo.gps", "latlng " + latitude +" - "+longitude);
 
                     speed = locToMeter*1.8; //2초에 한번씩 불러옴
+
                     lineLatLngList.add(new LatLng(latitude, longitude)); //선을 연결할 좌표를 추가해줌
                     JsonArray nowLatLng = new JsonArray();
                     nowLatLng.add(longitude);
                     nowLatLng.add(latitude);
+                    boolean flag = pointsList.add(Point.fromLngLat(longitude,latitude));
+                    Log.i("com.kosmo.shoong", flag?"들어감":"안들어감");
+                    for(int i=0;i<pointsList.size();i++)
+                        Log.i("com.kosmo.shoong", pointsList.get(i).toString());
                     coordinates_.add(nowLatLng);
+                    /*
+                    if(recordRoute.getText().equals("측정 종료하기")){
+                        SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_hh_mm");
+                        String nowday = format.format(System.currentTimeMillis()); //현재 날짜 얻어오기
+                        jsonProperties.addProperty("endTime",nowday);
+                    }
+                     */
                     mHandler.sendEmptyMessage(200); //지도에 선을 그어주는 함수 추가
-                    X_ = latitude;Y_=longitude;
+                    //X_ = latitude;Y_=longitude;
                     deltime =  System.currentTimeMillis();
                     loctemp = location; // 위치 저장해서 2초뒤에 비교할거
                 } catch (Exception e) {
@@ -285,13 +356,19 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     Log.i("com.kosmo.shooong", "에러 발생 " + e);
                 }
             }
+            SystemClock.sleep(1000);
             return null;
+        }
+        @Override
+        protected void onPostExecute(String s) {
+            //doInBackground()메소드 완료 후 처리할 코드
+            super.onPostExecute(s);
         }
 
         @Override
-        protected void onPostExecute(String s) {
-
-            super.onPostExecute(s);
+        protected void onProgressUpdate(Void... values) {
+            //UI 변경 - DrawLine
+            super.onProgressUpdate(values);
         }
     }/////////////////ShooongAsyncTask
 
@@ -302,18 +379,17 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                 switch (msg.what) {
                     case 200:
                         Log.d("com.kosmo.shooong", "선그리기요청");
+
                         mapboxMap.addPolyline(new PolylineOptions()
                                 .addAll(lineLatLngList)
                                 .color(Color.parseColor("#F67A42"))
                                 .width(3));
                         break;
-
                 }
             }else{
                 for(Polyline p : mapboxMap.getPolylines()){
                     mapboxMap.removePolyline(p);}
                 lineLatLngList = new ArrayList<>();
-
             }
         }
     };
@@ -321,68 +397,41 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     private void setGeoJson() throws IOException {
         FileOutputStream outputStream;
         JsonObject geoJson;
-        JsonObject properties;
+        JsonObject jsonProperties;
         JsonObject geometry;
         //JsonArray coordinates;
         SharedPreferences preferences = getContext().getSharedPreferences("loginInfo", Activity.MODE_PRIVATE);
-        id=preferences.getString("id",null);//아이디 얻기
-        name=preferences.getString("name",null);
+        String id=preferences.getString("id",null);//아이디 얻기
+        String name=preferences.getString("name",null);
         Log.i("com.kosmo.shooong",id);
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-hh:mm");
-        nowday = format.format(System.currentTimeMillis()); //현재 날짜 얻어오기
+        SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_hh_mm");
+        String nowday = format.format(startTime); //현재 날짜 얻어오기
         String filename = name+"_"+nowday+".json";//파일이름 지정
         String filepath = "/data/data/com.kosmo.shooong/files/"+filename; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
-        File jsonfile = new File(filepath);
-        if (!jsonfile.exists()) { //파일 없으면 빈 파일 생성
-            jsonfile.createNewFile();
+        jsonFile = new File(filepath);
+        //TurfMeasurement. lineLatLngList (, TurfConstants.UNIT_KILOMETERS);
+        //Log.i("com.kosmo.shoong",Double.toString(TurfMeasurement.length(pointsList,TurfConstants.UNIT_KILOMETERS)));
+        if (!jsonFile.exists()) { //파일 없으면 빈 파일 생성
+            jsonFile.createNewFile();
             geoJson = new JsonObject();
-            properties = new JsonObject();
+            jsonProperties = new JsonObject();
             geometry = new JsonObject();
             //coordinates = new JsonArray();
+            geoJson.addProperty("type","Feature");
+            jsonProperties.addProperty("filename",filename);
+            jsonProperties.addProperty("userId",id);
+            jsonProperties.addProperty("userName",name);
+            jsonProperties.addProperty("startTime",nowday);
+            jsonProperties.addProperty("duration",(endTime-startTime)/1000);
+            jsonProperties.addProperty("recordLength",TurfMeasurement.length(pointsList,TurfConstants.UNIT_KILOMETRES));
             geometry.addProperty("type","MultiLineString");
             geometry.add("coordinates",coordinates);
-            properties.addProperty("userId",id);
-            properties.addProperty("userName",name);
-            properties.addProperty("time",nowday);
-            geoJson.addProperty("type","Feature");
-            geoJson.add("properties",properties);
+            geoJson.add("properties", jsonProperties);
             geoJson.add("geometry",geometry);
             outputStream = getContext().openFileOutput(filename, Context.MODE_PRIVATE);
             outputStream.write(geoJson.toString().getBytes());
             outputStream.close();
         }
-        /*
-        FileReader filereader = new FileReader(txtfile);
-        int singleCh = 0;
-        String walkdata = "";
-        while ((singleCh = filereader.read()) != -1) { // 파일 읽어오기(한글자씩)
-            walkdata = walkdata + (char) singleCh;
-        }
-        filereader.close();
-
-        String[] daywork = walkdata.split("/");   //날짜별 split로 구분 ex) 2020-07-15,1000 >>/<< 2020-07-14,2000/
-        if (daywork[0].substring(0, 10).equals(nowday)) { // 현재 날짜와 구분하여 다르면 새 날짜 추가
-            daywork[0] = nowday + "," + mSteps;
-        }
-        String stringa = walkdata;
-        if (!stringa.substring(0, 10).equals(nowday)) {
-            stringa = nowday + "," + mSteps + "/" + stringa;
-        } else {
-            //첫번째 / 찾아서 그 전까지 replace
-            int index = stringa.indexOf("/");
-            stringa = stringa.replace(stringa.substring(0, index), nowday + "," + mSteps);
-        }
-        // beforeDayStep = Integer.parseInt(stringa.split("/")[1].split(",")[1]);
-        //데이터 수동으로 넣을라면 여기 넣으면 됨
-        //stringa ="2020-07-20,4177/2020-07-19,6671/2020-07-17,5715/2020-07-16,8560/2020-07-15,9248/2020-07-14,5776/2020-07-13,6681/2020-07-12,3140/";
-        try {
-            outputStream = getContext().openFileOutput(filenamea, Context.MODE_PRIVATE);
-            outputStream.write(stringa.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-         */
     }
 
     public static CharSequence getsteps() {
@@ -400,7 +449,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                 // initial value
                 mCounterSteps = (int) event.values[0];
             }
-            //  mSteps = (int) event.values[0] - mCounterSteps; // 앱 켤때마다 카운터 0으로 초기화 시킴
+            mSteps = (int) event.values[0] - mCounterSteps; // 앱 켤때마다 카운터 0으로 초기화 시킴
             tvStepCount.setText("현재 걸음 수 : " + (int) event.values[0]);
 
             mSteps = (int) event.values[0];
@@ -457,8 +506,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         sensorManager.registerListener(this, stepCountSensor, SensorManager.SENSOR_DELAY_FASTEST);
         mapView.onResume();
     }
-
-
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -517,9 +564,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     Toast.makeText(activity.getContext(), ""+location.getLatitude() + location.getLongitude(), Toast.LENGTH_SHORT).show();
                 }
             }
-
-
-
         }
 
         /**
@@ -530,9 +574,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         @Override
         public void onFailure(@NonNull Exception exception) {
             Fragment_2 activity = activityWeakReference.get();
-
         }
     }
-
-
 }

@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -36,6 +37,7 @@ public class Fragment_1 extends Fragment {
     private List<FragmentItem> items = new Vector<FragmentItem>();
     private ListView listView;
     private Fragment1Adapter adapter;
+    private View view;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -49,7 +51,7 @@ public class Fragment_1 extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.i("com.kosmo.kosmoapp","onCreateView:1");
         //레이아웃 전개]
-        View view = inflater.inflate(R.layout.tablayout_1,null,false);
+        view = inflater.inflate(R.layout.tablayout_1,null,false);
         //아이디로 리소스 가져올때:view.findViewById()
         //어댑터 생성]
         adapter=new Fragment1Adapter(getContext(),R.layout.tabmenu1_item_layout,items);
@@ -57,13 +59,17 @@ public class Fragment_1 extends Fragment {
         listView=view.findViewById(R.id.picassoListView);
         //리스트뷰와 어댑터 연결]
         listView.setAdapter(adapter);
+
         //데이타는 스레드로 원격 서버에서 받아 온다
-        new ItemsAsyncTask().execute("http://192.168.0.15:8080/rest/photos");
+        new ItemsAsyncTask().execute();
         return view;
     }/////////
+
+    //파일로
     private class ItemsAsyncTask extends AsyncTask<String,Void,Void>{
         @Override
         protected Void doInBackground(String... params) {
+            /*
             StringBuffer buf = new StringBuffer();
             try {
                 URL url = new URL(params[0]);
@@ -93,6 +99,15 @@ public class Fragment_1 extends Fragment {
                 }
             }
             catch(Exception e){e.printStackTrace();}
+             */
+            String filepath = "/data/data/com.kosmo.shooong/files";
+            File folder = new File(filepath);
+            File[] fileList =  folder.listFiles();
+            Log.i("com.kosmo.shoong",Integer.toString(fileList.length));
+            for(File file:fileList){
+                FragmentItem item = new FragmentItem(file.getName(),Long.toString(file.length()));
+                items.add(item);
+            }
             return null;
         }
         @Override
@@ -101,4 +116,5 @@ public class Fragment_1 extends Fragment {
             adapter.notifyDataSetChanged();
         }
     }/////////////////////ItemsAsyncTask
+
 }

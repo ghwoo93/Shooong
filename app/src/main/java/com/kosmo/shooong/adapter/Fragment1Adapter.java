@@ -54,8 +54,9 @@ public class Fragment1Adapter extends BaseAdapter {
         //리스트 뷰에서 하나의 아이템항목을 구성하는 각 위젯의 데이타 설정]
         //텍스트뷰 위젯 얻고 데이터 설정]
         ((TextView)convertView.findViewById(R.id.itemtext)).setText(items.get(position).getItemText());
+        ((TextView)convertView.findViewById(R.id.itemicon)).setText(items.get(position).getItemImageUrl());
         //이미지뷰 위젯 얻고 데이타 설정]
-        ImageView imageView = convertView.findViewById(R.id.itemicon);
+        //ImageView imageView = convertView.findViewById(R.id.itemicon);
         //Picasso라이브러리 참조 사이트:http://dwfox.tistory.com/31
         //                            https://github.com/square/picasso
         //외부(원격)로부터 이미지를 불러와야 할 경우 유용하게 사용할 수 있는 라이브러리이다.
@@ -63,7 +64,7 @@ public class Fragment1Adapter extends BaseAdapter {
         //라이브러리 등록 방법
         // build.gradle (Module:app)파일에 implementation 'com.squareup.picasso:picasso:(insert latest version)' 추가
         //마지막으로 아래처럼 코딩
-        Picasso.get().load(items.get(position).getItemImageUrl()).into(imageView);
+        //Picasso.get().load(items.get(position).getItemImageUrl()).into(imageView);
 
         if(position % 2==0)
             convertView.setBackgroundColor(0xFFFFFFFF);
