@@ -404,7 +404,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         String id=preferences.getString("id",null);//아이디 얻기
         String name=preferences.getString("name",null);
         Log.i("com.kosmo.shooong",id);
-        SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_hh_mm");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH_mm");
         String nowday = format.format(startTime); //현재 날짜 얻어오기
         String filename = name+"_"+nowday+".json";//파일이름 지정
         String filepath = "/data/data/com.kosmo.shooong/files/"+filename; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
@@ -423,7 +423,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             jsonProperties.addProperty("userName",name);
             jsonProperties.addProperty("startTime",nowday);
             jsonProperties.addProperty("duration",(endTime-startTime)/1000);
-            jsonProperties.addProperty("recordLength",TurfMeasurement.length(pointsList,TurfConstants.UNIT_KILOMETRES));
+            jsonProperties.addProperty("recordLength",Double.toString(TurfMeasurement.length(pointsList,TurfConstants.UNIT_KILOMETRES)));
             geometry.addProperty("type","MultiLineString");
             geometry.add("coordinates",coordinates);
             geoJson.add("properties", jsonProperties);
