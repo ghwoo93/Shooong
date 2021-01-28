@@ -101,7 +101,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     JsonArray coordinates_;
     List<LatLng> lineLatLngList;
     List<Point> pointsList;
-    //JsonObject jsonProperties;
     Button recordRoute, uploadRoute;
     boolean locflag = false;
     double speed, deltime; //X_, Y_;
@@ -340,19 +339,10 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     for(int i=0;i<pointsList.size();i++)
                         Log.i("com.kosmo.shoong", pointsList.get(i).toString());
                     coordinates_.add(nowLatLng);
-                    /*
-                    if(recordRoute.getText().equals("측정 종료하기")){
-                        SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_hh_mm");
-                        String nowday = format.format(System.currentTimeMillis()); //현재 날짜 얻어오기
-                        jsonProperties.addProperty("endTime",nowday);
-                    }
-                     */
                     mHandler.sendEmptyMessage(200); //지도에 선을 그어주는 함수 추가
-                    //X_ = latitude;Y_=longitude;
                     deltime =  System.currentTimeMillis();
                     loctemp = location; // 위치 저장해서 2초뒤에 비교할거
                 } catch (Exception e) {
-//                                Toast.makeText(getContext(), "에러 발생 : " + e, Toast.LENGTH_LONG).show();
                     Log.i("com.kosmo.shooong", "에러 발생 " + e);
                 }
             }
@@ -409,7 +399,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         String filename = name+"_"+nowday+".json";//파일이름 지정
         String filepath = "/data/data/com.kosmo.shooong/files/"+filename; //안드로이드 내부 저장소(앱 삭제되면 같이 삭제 / 다른 앱에서 접근못함)
         jsonFile = new File(filepath);
-        //TurfMeasurement. lineLatLngList (, TurfConstants.UNIT_KILOMETERS);
         //Log.i("com.kosmo.shoong",Double.toString(TurfMeasurement.length(pointsList,TurfConstants.UNIT_KILOMETERS)));
         if (!jsonFile.exists()) { //파일 없으면 빈 파일 생성
             jsonFile.createNewFile();
@@ -463,7 +452,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                 notificationManager.createNotificationChannel(channel);
                 builder = new NotificationCompat.Builder(getContext(), channelID);
             }else{
-                //알림 건축가 객체 생성
+                //알림 빌더 객체 생성
                 builder= new NotificationCompat.Builder(getContext(), null);
             }
 
