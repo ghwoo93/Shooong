@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
-        Log.i("com.kosmo.kosmoapp",getIntent().getStringExtra("name")+"님 즐앱 하세요");
 
         APP_CONTEXT = getApplicationContext();
 
