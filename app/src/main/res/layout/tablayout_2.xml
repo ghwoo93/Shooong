@@ -13,11 +13,11 @@
         <com.mapbox.mapboxsdk.maps.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
-            android:layout_height="250sp"
+            android:layout_height="300sp"
             mapbox:mapbox_cameraZoom="16"
             />
         <TextView
-            android:layout_marginTop="170sp"
+            android:layout_marginTop="230sp"
             android:layout_gravity="right"
             android:id="@+id/nowSpeed"
             android:layout_width="130sp"
@@ -26,15 +26,18 @@
             android:background="#59DFDFFF"
             android:text=" 속도 표시\n 이동 거리"/>
     </FrameLayout>
-    <TextView
-        android:id="@+id/textviewstep"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="걸음 수가 이곳에 표시됩니다"
-        android:textSize="40sp"
+        android:id="@+id/coursezone">
+        <ListView
+            android:id="@+id/picassoListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+        </ListView>
+    </FrameLayout>
 
-        />
 
     <LinearLayout
         android:layout_width="match_parent"

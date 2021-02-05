@@ -1,6 +1,8 @@
 package com.kosmo.shooong.adapter;
 
 import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -8,10 +10,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+
+import com.kosmo.shooong.MainActivity;
 import com.kosmo.shooong.R;
 import com.kosmo.shooong.item.FragmentItem;
+import com.kosmo.shooong.utils.FileUploadUtils;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
+
+import java.io.File;
 import java.util.List;
 
 public class Fragment1Adapter extends BaseAdapter {
@@ -73,14 +82,63 @@ public class Fragment1Adapter extends BaseAdapter {
         //아이템 이벤트 처리]
         //아이템 항목(이미지뷰하나,텍스트뷰 하나구성) 클릭시
         final int index = position;
-        convertView.setOnClickListener(new View.OnClickListener() {
+        convertView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public void onClick(View v) {
-
-                Toast.makeText(context,items.get(index).getItemText(),Toast.LENGTH_SHORT).show();
+            public boolean onLongClick(View view) {
+                String fileName = items.get(index).getItemImageUrl();
+                Toast.makeText(context,fileName,Toast.LENGTH_SHORT).show();
+                new UploadAsynTask().execute(
+                        "http://192.168.0.15:8080/shoong/record/upload/json",
+                        fileName);
+                return false;
             }
         });
 
         return convertView;
+    }
+
+    private class UploadAsynTask extends AsyncTask<String,Void,String>{
+
+        private AlertDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            //프로그래스바용 다이얼로그 생성]
+            //빌더 생성 및 다이얼로그창 설정
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setCancelable(false);
+            builder.setView(R.layout.progress);
+            builder.setIcon(android.R.drawable.ic_menu_compass);
+            builder.setTitle("업로드");
+
+            //빌더로 다이얼로그창 생성
+            progressDialog = builder.create();
+            progressDialog.show();
+        }
+
+        @Override
+        protected String doInBackground(String[] params) {
+            String filename = params[1];
+            String filepath = "/data/data/com.kosmo.shooong/files/"+filename;
+            File jsonFile = new File(filepath);
+            Log.i("com.kosmo.shoong","파일 업로드 전");
+            FileUploadUtils.send2Server(jsonFile,params[0]);
+            Log.i("com.kosmo.shoong","파일 업로드 후");
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.i("com.kosmo.shoong","result:"+result);
+            if(result !=null && result.length()!=0) {//회원인 경우
+                if(result.equals("업로드 성공")){
+                    Log.i("com.kosmo.shoong","파일 삭제");
+                }
+            }
+
+            //다이얼로그 닫기
+            if(progressDialog!=null && progressDialog.isShowing())
+                progressDialog.dismiss();
+        }
     }
 }

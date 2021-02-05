@@ -76,10 +76,10 @@ public class MainActivity extends AppCompatActivity {
         mapButton = findViewById(R.id.btnNavi);
         //탭메뉴 구성
         //방법1-setText() 및 setIcon()메소드 사용
-        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_app_info).setText("PICASSO"));
-        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_audio_settings).setText("VOLLEY"));
+        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_app_info).setText("Record"));
+        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_audio_settings).setText("측정"));
         tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_bluetooth).setText("카메라"));
-        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_device_alarms).setText("웹뷰"));
+        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_device_alarms).setText("팩"));
 
 
 

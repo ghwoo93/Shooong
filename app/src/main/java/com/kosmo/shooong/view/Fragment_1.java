@@ -105,6 +105,7 @@ public class Fragment_1 extends Fragment {
             File[] fileList =  folder.listFiles();
             Log.i("com.kosmo.shoong",Integer.toString(fileList.length));
             for(File file:fileList){
+                //FragmentItem item = new FragmentItem(file.getName(),Long.toString(file.length()));
                 FragmentItem item = new FragmentItem(file.getName(),Long.toString(file.length()));
                 items.add(item);
             }
