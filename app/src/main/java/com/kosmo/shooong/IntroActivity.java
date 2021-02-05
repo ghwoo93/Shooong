@@ -37,7 +37,7 @@ public class IntroActivity extends AppCompatActivity {
         Handler handler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
-                Intent intent = new Intent(IntroActivity.this,LoginActivity.class);
+                Intent intent = new Intent(IntroActivity.this, LoginActivity.class);
                 startActivity(intent);
                 //전환된 화면(LoginActivity)Destroy시 인트로 화면도 Destroy하기
                 finish();
