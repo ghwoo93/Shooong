@@ -103,7 +103,7 @@ public class Fragment_1 extends Fragment {
             String filepath = "/data/data/com.kosmo.shooong/files";
             File folder = new File(filepath);
             File[] fileList =  folder.listFiles();
-            Log.i("com.kosmo.shoong",Integer.toString(fileList.length));
+            //Log.i("com.kosmo.shoong",Integer.toString(fileList.length));
             for(File file:fileList){
                 //FragmentItem item = new FragmentItem(file.getName(),Long.toString(file.length()));
                 FragmentItem item = new FragmentItem(file.getName(),Long.toString(file.length()));

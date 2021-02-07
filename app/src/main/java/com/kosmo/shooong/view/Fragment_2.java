@@ -106,7 +106,8 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     double speed, deltime; //X_, Y_;
     private MapView mapView;
     public MapboxMap mapboxMap;
-    TextView tvStepCount, nowspeed;
+    TextView nowspeed;
+    //TextView tvStepCount, nowspeed;
     LocationChange loc = new LocationChange(this);
     File jsonFile;
     long startTime,endTime;
@@ -179,7 +180,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         //레이아웃 전개]
         final View view = inflater.inflate(R.layout.tablayout_2, null, false);
         nowspeed = view.findViewById(R.id.nowSpeed);
-        tvStepCount = view.findViewById(R.id.textviewstep);
+        //tvStepCount = view.findViewById(R.id.textviewstep);
         sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
         stepCountSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER); // 0부터 세고싶으면  TYPE_STEP_COUNTER
         if (stepCountSensor == null) {
@@ -205,7 +206,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         @Override
         public void onClick(View view) {
             new ShoongAsyncTask().execute(
-                    "http://192.168.0.15:8080/shoong/record/upload/json");
+                    "http://192.168.75.103:8080/shoong/record/upload/json");
         }
     };
 
@@ -316,8 +317,6 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             while (locflag) { // 스레드
                 try {
                     Thread.sleep(1000); // 2초간 Thread 휴식
-                    //locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE); //퉷
-                    // 와이파이 되어있으면 네트워크가 좋고 네트워크
                     Location location = mapboxMap.getLocationComponent().getLastKnownLocation();
                     float locToMeter = location.distanceTo(loctemp); //2초전에 저장한 위치랑 현재위치 비교해서 m로 반환함
                     distance = distance + locToMeter;
@@ -439,7 +438,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                 mCounterSteps = (int) event.values[0];
             }
             mSteps = (int) event.values[0] - mCounterSteps; // 앱 켤때마다 카운터 0으로 초기화 시킴
-            tvStepCount.setText("현재 걸음 수 : " + (int) event.values[0]);
+            //tvStepCount.setText("현재 걸음 수 : " + (int) event.values[0]);
 
             mSteps = (int) event.values[0];
 

@@ -69,7 +69,7 @@ public class Fragment_4 extends Fragment {
         //자스의 alert()모양을 Toast 로 변경
         webView.setWebChromeClient(new CustomWebChromeClient());
         //get요청
-        webView.loadUrl("http://192.168.0.15:8080/shoong/");
+        webView.loadUrl("http://192.168.75.103:8080/shoong/");
         //post요청
         /*
         try {
