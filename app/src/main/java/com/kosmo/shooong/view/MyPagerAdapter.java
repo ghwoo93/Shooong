@@ -22,8 +22,8 @@ public class MyPagerAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         switch(position){
             case 0:return new Fragment_1();
-            case 1:return new com.kosmo.shooong.view.Fragment_2();
-            case 2:return new com.kosmo.shooong.view.Fragment_3();
+            case 1:return new com.kosmo.shooong.view.Fragment_3();
+            case 2:return new com.kosmo.shooong.view.Fragment_2();
             default:return new Fragment_4();
         }
 

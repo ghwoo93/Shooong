@@ -69,14 +69,15 @@ public class Fragment_4 extends Fragment {
         //자스의 alert()모양을 Toast 로 변경
         webView.setWebChromeClient(new CustomWebChromeClient());
         //get요청
-        webView.loadUrl("http://192.168.75.103:8080/shoong/");
+        webView.loadUrl("http://192.168.0.100:8080/shoong/pack/main.do");
         //post요청
         /*
         try {
             String params = "id=" + URLEncoder.encode(id, "UTF-8") + "&pwd=" + URLEncoder.encode(pwd, "UTF-8");
             webView.postUrl("http://192.168.0.15:8080/shoong/android/login", params.getBytes());
         }
-        catch(UnsupportedEncodingException e){e.printStackTrace();}*/
+        catch(UnsupportedEncodingException e){e.printStackTrace();}
+        */
 
         return view;
     }/////////

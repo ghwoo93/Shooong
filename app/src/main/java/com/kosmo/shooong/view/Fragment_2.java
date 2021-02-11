@@ -7,6 +7,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -40,8 +41,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.kosmo.shooong.MainActivity;
 import com.kosmo.shooong.R;
 import com.kosmo.shooong.utils.FileUploadUtils;
 import com.mapbox.android.core.location.LocationEngine;
@@ -49,6 +54,9 @@ import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineResult;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.MultiLineString;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
@@ -65,21 +73,31 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.localization.LocalizationPlugin;
 import com.mapbox.mapboxsdk.style.layers.Layer;
+import com.mapbox.mapboxsdk.style.layers.LineLayer;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.mapboxsdk.utils.ColorUtils;
 import com.mapbox.turf.TurfConstants;
 import com.mapbox.turf.TurfMeasurement;
 
 
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField;
 //요구사항 : 위젯 연동(위젯은 혼자
 
@@ -111,6 +129,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     LocationChange loc = new LocationChange(this);
     File jsonFile;
     long startTime,endTime;
+    private Fragment_2 f2;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -133,6 +152,39 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     settlementLabelLayer.setProperties(textField("{name_korea}"));
                     initCoordinates();
                     enableLocationComponent(style);
+
+                    //인텐트로 파일넘기기기
+
+
+                    String filepath = "/data/data/com.kosmo.shooong/files/upload/recordsample9.json";
+                    File json = new File(filepath);
+
+                    BufferedReader br = null;
+                    StringBuffer sb = null;
+                    try {
+                        br = new BufferedReader(
+                                new InputStreamReader(new FileInputStream(json)));
+
+                        sb = new StringBuffer();
+
+                        int data = -1;
+                        char[] chars = new char[1024];
+
+                        while ((data = br.read(chars)) != -1) {
+                            sb.append(chars, 0, data);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    GeoJsonSource geoJsonSource = new GeoJsonSource("geojson-source", sb.toString());
+
+                    Log.i("com.kosmo.shooong", sb.toString());
+                    style.addSource(geoJsonSource);
+                    style.addLayer(new LineLayer("geojson-source", "geojson-source").withProperties(
+                            lineColor(ColorUtils.colorToRgbaString(Color.parseColor("#3bb2d0"))),
+                            lineWidth(4f)
+                    ));
                 }
             });
         }
@@ -177,6 +229,8 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         //위젯 활성화
         Mapbox.getInstance(getContext(), getString(R.string.mapbox_access_token));
 
+        f2 = Fragment_2.this;
+
         //레이아웃 전개]
         final View view = inflater.inflate(R.layout.tablayout_2, null, false);
         nowspeed = view.findViewById(R.id.nowSpeed);
@@ -199,6 +253,11 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         recordRoute.setOnClickListener(recordListener);
         uploadRoute.setOnClickListener(uploadListener);
         uploadRoute.setEnabled(false);
+
+        //Feature feature = Feature.fromJson(sb.toString());
+
+        //mapboxMap.getStyle().addSource(new GeoJsonSource("geojson-source",sb.toString()));
+        //addLine("rawLine",feature.get,"#3bb2d0");
         return view;
     }///////////////onCreateView
 
@@ -206,7 +265,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         @Override
         public void onClick(View view) {
             new ShoongAsyncTask().execute(
-                    "http://192.168.75.103:8080/shoong/record/upload/json");
+                    "http://192.168.0.100:8080/shoong/record/upload/json");
         }
     };
 
@@ -267,14 +326,18 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     private View.OnClickListener recordListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            new ShooongAsyncTask().execute();
+            new ShooongAsyncTask(f2).execute();
         }
     };//////////////////OnClickListener
 
     //PolyLine Draw & GeoJson IO 스레드 정의
     private class ShooongAsyncTask extends AsyncTask<String,Void,String>{
 
-        //private WeakReference<Fragment_2> weakReference;
+        private WeakReference<Fragment_2> weakReference;
+
+        ShooongAsyncTask(Fragment_2 activity) {
+            this.weakReference = new WeakReference<>(activity);
+        }
 
         @Override
         protected void onPreExecute() {
@@ -304,7 +367,8 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             double latitude;
             double longitude;
 
-            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getContext(), "권한이 수락되지 않았습니다. 다시 시도해주세요", Toast.LENGTH_LONG).show();
                 return null;
             }
@@ -333,6 +397,12 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     JsonArray nowLatLng = new JsonArray();
                     nowLatLng.add(longitude);
                     nowLatLng.add(latitude);
+
+                    //해야할일
+                    /*
+                    포인트 리스트를 합칠지
+                     */
+
                     boolean flag = pointsList.add(Point.fromLngLat(longitude,latitude));
                     Log.i("com.kosmo.shoong", flag?"들어감":"안들어감");
                     for(int i=0;i<pointsList.size();i++)
@@ -360,6 +430,30 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
             super.onProgressUpdate(values);
         }
     }/////////////////ShooongAsyncTask
+    /*
+    private void drawLines(@NonNull FeatureCollection featureCollection) {
+        List<Feature> features = featureCollection.features();
+        if (features != null && features.size() > 0) {
+            Feature feature = features.get(0);
+            drawSimplify(feature);
+        }
+    }
+
+    private void drawSimplify(@NonNull Feature feature) {
+        //List<Point> points = ((LineString) Objects.requireNonNull(feature.geometry())).coordinates();
+        List<Point> points =
+        addLine("simplifiedLine", Feature.fromGeometry(LineString.fromLngLats(points)), "#3bb2d0");
+    }
+    */
+    private void addLine(String layerId, Feature feature, String lineColorHex) {
+        mapboxMap.getStyle(style -> {
+            style.addSource(new GeoJsonSource(layerId, feature));
+            style.addLayer(new LineLayer(layerId, layerId).withProperties(
+                    lineColor(ColorUtils.colorToRgbaString(Color.parseColor(lineColorHex))),
+                    lineWidth(4f)
+            ));
+        });
+    }
 
     private final Handler mHandler = new Handler() {
         @Override
@@ -384,6 +478,10 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     };
 
     private void setGeoJson() throws IOException {
+        /*
+        해야할 일
+        인텐트 확인해서 있으면 프로퍼티만 작성하기
+         */
         FileOutputStream outputStream;
         JsonObject geoJson;
         JsonObject jsonProperties;

@@ -69,37 +69,6 @@ public class Fragment_1 extends Fragment {
     private class ItemsAsyncTask extends AsyncTask<String,Void,Void>{
         @Override
         protected Void doInBackground(String... params) {
-            /*
-            StringBuffer buf = new StringBuffer();
-            try {
-                URL url = new URL(params[0]);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-                //서버에 요청 및 응답코드 받기
-                int responseCode = conn.getResponseCode();
-                if(responseCode==HttpURLConnection.HTTP_OK){
-                    //연결된 커넥션에서 서버에서 보낸 데이타 읽기
-                    BufferedReader br =
-                            new BufferedReader(
-                                    new InputStreamReader(conn.getInputStream(),"UTF-8"));
-                    String line;
-                    while((line=br.readLine())!=null){
-                        buf.append(line);
-                    }
-                    br.close();
-                    //JSON데이타 파싱
-                    JSONArray array= new JSONArray(buf.toString());
-                    for(int i=0;i<array.length();i++){
-                        JSONObject json = array.getJSONObject(i);
-                        String imageUrl = json.getString("imageUrl");
-                        String text = json.getString("text");
-                        FragmentItem item = new FragmentItem(imageUrl,text);
-                        items.add(item);
-                    }
-                }
-            }
-            catch(Exception e){e.printStackTrace();}
-             */
             String filepath = "/data/data/com.kosmo.shooong/files";
             File folder = new File(filepath);
             File[] fileList =  folder.listFiles();

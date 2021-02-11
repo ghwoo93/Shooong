@@ -11,17 +11,17 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.kosmo.shooong.R;
 import com.kosmo.shooong.VolleySingleton;
-import com.kosmo.shooong.item.FragmentItem;
+import com.kosmo.shooong.item.FragmentCourseItem;
 
 import java.util.List;
 
-public class Fragment2Adapter extends BaseAdapter {
+public class Fragment1CourseAdapter extends BaseAdapter {
     //생성자를 통해서 초기화 할 멤버 변수들]
 
     //리스트뷰가 실행되는 컨텍스트
     private Context context;
     //리스트뷰에 뿌릴 데이타
-    private List<FragmentItem> items;
+    private List<FragmentCourseItem> items;
     //레이아웃 리소스 아이디(선택사항)
     private int layoutResId;
 
@@ -31,7 +31,7 @@ public class Fragment2Adapter extends BaseAdapter {
     //2]생성자 정의:생성자로 Context와 리스트뷰에 뿌려줄 데이타를 받는다.
     //             리소스 레이아웃 아이디(int)는 선택사항
     //인자생성자2]컨텍스트와 레이아웃 리소스 아이디 그리고 데이타
-    public Fragment2Adapter(Context context, int layoutResId, List<FragmentItem> items) {
+    public Fragment1CourseAdapter(Context context, int layoutResId, List<FragmentCourseItem> items) {
         this.context = context;
         this.items = items;
         this.layoutResId = layoutResId;

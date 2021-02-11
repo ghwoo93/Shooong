@@ -88,7 +88,7 @@ public class Fragment1Adapter extends BaseAdapter {
                 String fileName = items.get(index).getItemImageUrl();
                 Toast.makeText(context,fileName,Toast.LENGTH_SHORT).show();
                 new UploadAsynTask().execute(
-                        "http://192.168.0.15:8080/shoong/record/upload/json",
+                        "http://192.168.0.100:8080/shoong/record/upload/json",
                         fileName);
                 return false;
             }

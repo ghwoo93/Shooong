@@ -31,10 +31,16 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     //지도를 위한 코드
+    //geojson
+    implementation 'com.mapbox.mapboxsdk:mapbox-sdk-geojson:5.6.0'
+    //services
+    implementation 'com.mapbox.mapboxsdk:mapbox-sdk-services:5.6.0'
+    //core
+    implementation 'com.mapbox.mapboxsdk:mapbox-sdk-core:5.6.0'
     //turf
     implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:5.6.0'
     //location engine
-    implementation 'com.google.android.gms:play-services-location:17.1.0'\
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
     //mapbox
     implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:9.2.0'
     //implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:9.3.0'

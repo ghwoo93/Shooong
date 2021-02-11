@@ -77,11 +77,9 @@ public class MainActivity extends AppCompatActivity {
         //탭메뉴 구성
         //방법1-setText() 및 setIcon()메소드 사용
         tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_app_info).setText("Record"));
-        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_audio_settings).setText("측정"));
-        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_bluetooth).setText("카메라"));
+        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_bluetooth).setText("Course"));
+        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_audio_settings).setText("Riding"));
         tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.perm_group_device_alarms).setText("팩"));
-
-
 
         //방법2-하나의 탭메뉴를 위한 사용자 정의 레이아웃 사용
         //tabLayout.addTab(tabLayout.newTab().setCustomView(customTabview("PICCASO",R.drawable.perm_group_app_info)));
