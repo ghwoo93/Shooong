@@ -179,7 +179,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
 
                     GeoJsonSource geoJsonSource = new GeoJsonSource("geojson-source", sb.toString());
 
-                    Log.i("com.kosmo.shooong", sb.toString());
+                    //Log.i("com.kosmo.shooong", sb.toString());
                     style.addSource(geoJsonSource);
                     style.addLayer(new LineLayer("geojson-source", "geojson-source").withProperties(
                             lineColor(ColorUtils.colorToRgbaString(Color.parseColor("#3bb2d0"))),
@@ -265,7 +265,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         @Override
         public void onClick(View view) {
             new ShoongAsyncTask().execute(
-                    "http://192.168.0.100:8080/shoong/record/upload/json");
+                    "http://192.168.0.15:8080/shoong/record/upload/json");
         }
     };
 
@@ -300,7 +300,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
         protected void onPostExecute(String result) {
             //서버로부터 받은 데이타(JSON형식) 파싱
             //회원이 아닌 경우 빈 문자열
-            Log.i("com.kosmo.shoong","result:"+result);
+            //Log.i("com.kosmo.shoong","result:"+result);
             if(result !=null && result.length()!=0) {//회원인 경우
                 try {
                     JSONObject json = new JSONObject(result);
@@ -465,7 +465,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
 
                         mapboxMap.addPolyline(new PolylineOptions()
                                 .addAll(lineLatLngList)
-                                .color(Color.parseColor("#F67A42"))
+                                .color(Color.parseColor("#24d900"))
                                 .width(3));
                         break;
                 }

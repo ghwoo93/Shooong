@@ -48,7 +48,8 @@ public class Fragment_1 extends Fragment {
     //2]onCreateView()오버 라이딩
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Log.i("com.kosmo.kosmoapp","onCreateView:1");
         //레이아웃 전개]
         view = inflater.inflate(R.layout.tablayout_1,null,false);
@@ -71,12 +72,17 @@ public class Fragment_1 extends Fragment {
         protected Void doInBackground(String... params) {
             String filepath = "/data/data/com.kosmo.shooong/files";
             File folder = new File(filepath);
-            File[] fileList =  folder.listFiles();
-            //Log.i("com.kosmo.shoong",Integer.toString(fileList.length));
-            for(File file:fileList){
-                //FragmentItem item = new FragmentItem(file.getName(),Long.toString(file.length()));
-                FragmentItem item = new FragmentItem(file.getName(),Long.toString(file.length()));
-                items.add(item);
+            boolean flag = folder.exists();
+            if(flag){
+                File[] fileList =  folder.listFiles();
+                //Log.i("com.kosmo.shoong",Integer.toString(fileList.length));
+                for(File file:fileList){
+                    //FragmentItem item = new FragmentItem(file.getName(),Long.toString(file.length()));
+                    FragmentItem item = new FragmentItem(file.getName(),Long.toString(file.length()));
+                    items.add(item);
+                }
+            } else {
+                folder.mkdir();
             }
             return null;
         }

@@ -55,6 +55,7 @@ dependencies {
 
     //okhttp3 파일업로드
     implementation 'com.squareup.okhttp3:okhttp:4.7.2'
+    //세션
 
     //기존 코드
     implementation 'androidx.appcompat:appcompat:1.1.0'

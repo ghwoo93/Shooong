@@ -15,7 +15,7 @@ import com.kosmo.shooong.item.FragmentCourseItem;
 
 import java.util.List;
 
-public class Fragment1CourseAdapter extends BaseAdapter {
+public class Fragment3CourseAdapter extends BaseAdapter {
     //생성자를 통해서 초기화 할 멤버 변수들]
 
     //리스트뷰가 실행되는 컨텍스트
@@ -25,25 +25,20 @@ public class Fragment1CourseAdapter extends BaseAdapter {
     //레이아웃 리소스 아이디(선택사항)
     private int layoutResId;
 
-    //volley 라이브러리 사용:네트웍이미지뷰에 원격 이미지 로드시
-    private ImageLoader imageLoader;
-
     //2]생성자 정의:생성자로 Context와 리스트뷰에 뿌려줄 데이타를 받는다.
     //             리소스 레이아웃 아이디(int)는 선택사항
     //인자생성자2]컨텍스트와 레이아웃 리소스 아이디 그리고 데이타
-    public Fragment1CourseAdapter(Context context, int layoutResId, List<FragmentCourseItem> items) {
+    public Fragment3CourseAdapter(Context context, int layoutResId, List<FragmentCourseItem> items) {
         this.context = context;
         this.items = items;
         this.layoutResId = layoutResId;
-        //Volley사용시
-        imageLoader = VolleySingleton.getInstance().getImageLoader();
-
     }
 
     @Override
     public int getCount() {
         return items.size();
     }
+
     @Override
     public Object getItem(int position) {
         return items.get(position);
@@ -61,14 +56,12 @@ public class Fragment1CourseAdapter extends BaseAdapter {
         }
         //리스트 뷰에서 하나의 아이템항목을 구성하는 각 위젯의 데이타 설정]
         //텍스트뷰 위젯 얻고 데이터 설정]
-        ((TextView)convertView.findViewById(R.id.itemtext)).setText(items.get(position).getItemText());
-        //이미지뷰 위젯 얻고 데이타 설정]
-        //Volley라이브러리:https://developer.android.com/training/volley/index.html
-        //build.gradle (Module:app)파일에  implementation 'com.android.volley:volley:1.1.1'
-        //이미지뷰 위젯 얻고 데이타 설정]
-        NetworkImageView imageView = convertView.findViewById(R.id.itemicon);
-        //picasso라이브러리 대신 volley라이브러리 사용
-        imageView.setImageUrl(items.get(position).getItemImageUrl(),imageLoader);
+        ((TextView)convertView.findViewById(R.id.itemCate)).setText(items.get(position).getCourseCateName());
+        ((TextView)convertView.findViewById(R.id.itemName)).setText(items.get(position).getCourseName());
+        ((TextView)convertView.findViewById(R.id.itemLength)).setText(items.get(position).getCourseLength());
+        ((TextView)convertView.findViewById(R.id.itemDuration)).setText(items.get(position).getCourseTime());
+        ((TextView)convertView.findViewById(R.id.itemDate)).setText(items.get(position).getCourseRegiDate());
+        ((TextView)convertView.findViewById(R.id.itemCourseNo)).setText(items.get(position).getCourseId());
         if(position % 2==0)
             convertView.setBackgroundColor(0xFFFFFFFF);
         else
@@ -79,8 +72,7 @@ public class Fragment1CourseAdapter extends BaseAdapter {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Toast.makeText(context,items.get(index).getItemText(),Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,items.get(index).getCourseName(),Toast.LENGTH_SHORT).show();
             }
         });
 
