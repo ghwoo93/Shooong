@@ -59,6 +59,7 @@ public class Fragment_3 extends Fragment {
 
         //데이타는 스레드로 원격 서버에서 받아 온다
         new ItemsAsyncTask().execute("http://192.168.0.15:8080/shoong/android/course/json");
+
         return view;
     }/////////
 

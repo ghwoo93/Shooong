@@ -1,6 +1,7 @@
 package com.kosmo.shooong.adapter;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -24,6 +25,8 @@ public class Fragment3CourseAdapter extends BaseAdapter {
     private List<FragmentCourseItem> items;
     //레이아웃 리소스 아이디(선택사항)
     private int layoutResId;
+
+    private Bundle bundle;
 
     //2]생성자 정의:생성자로 Context와 리스트뷰에 뿌려줄 데이타를 받는다.
     //             리소스 레이아웃 아이디(int)는 선택사항
@@ -75,7 +78,16 @@ public class Fragment3CourseAdapter extends BaseAdapter {
                 Toast.makeText(context,items.get(index).getCourseName(),Toast.LENGTH_SHORT).show();
             }
         });
-
+        /*
+        convertView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                String courseId = items.get(index).getCourseId();
+                bundle.putString("courseId",courseId);
+                return false;
+            }
+        });
+        */
         return convertView;
     }
 }

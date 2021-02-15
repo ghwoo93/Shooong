@@ -130,6 +130,7 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     File jsonFile;
     long startTime,endTime;
     private Fragment_2 f2;
+    private Bundle bundle;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -152,11 +153,15 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
                     settlementLabelLayer.setProperties(textField("{name_korea}"));
                     initCoordinates();
                     enableLocationComponent(style);
-
+                    /*
                     //인텐트로 파일넘기기기
+                    if(bundle.getString("courseId")!=null){
+                        String courseId = bundle.getString("courseId");
+                        Log.i("com.kosmo.shooong","getBundle:"+courseId);
+                    }
+                     */
 
-
-                    String filepath = "/data/data/com.kosmo.shooong/files/upload/recordsample9.json";
+                    String filepath = "/data/data/com.kosmo.shooong/files/upload/recordsample7.json";
                     File json = new File(filepath);
 
                     BufferedReader br = null;
@@ -223,12 +228,16 @@ public class Fragment_2 extends Fragment implements SensorEventListener, OnMapRe
     //2]onCreateView()오버 라이딩
     @Nullable
     @Override
-    public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         Log.i("com.kosmo.shooong", "onCreateView:2");
         //위젯 활성화
         Mapbox.getInstance(getContext(), getString(R.string.mapbox_access_token));
-
+        /*
+        bundle = savedInstanceState;
+        bundle.putString("courseId","0");
+         */
         f2 = Fragment_2.this;
 
         //레이아웃 전개]
